@@ -6,8 +6,7 @@ var x, y,
     x2 = 0,
     y2 = 0,
     speed = 2, // max speed
-    friction = 0.98, // friction
-    keys = [];
+    friction = 0.98 // friction
 
 
 let nitro = false;
@@ -52,6 +51,20 @@ let colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#f1c40f", "#e67e22", 
 const world_width = 3000;
 const world_height = 3000;
 
+let connectedToServer = false;
+let mobileDevice = false;
+
+let V = SAT.Vector;
+let P = SAT.Polygon;
+let polys = {};
+let manager;
+
+window.mobilecheck = function () {
+    var check = false;
+    (function (a) { if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) check = true; })(navigator.userAgent || navigator.vendor || window.opera);
+    return check;
+};
+
 function setup() {
     canvas("game_canvas");
     _canvas.width = window.innerWidth;
@@ -59,7 +72,53 @@ function setup() {
     frameRate = 100;
 }
 
+
+
 function create() {
+
+    if (!mobilecheck()) {
+        document.addEventListener("mousedown", function () {
+            // if (speedBar.mouseIsOver || rangeBar.mouseIsOver || movementSpeedBar.mouseIsOver) return;
+            hasThrust = false;
+            socket.emit("fire");
+        })
+
+        document.addEventListener("mouseup", function () {
+            mouseIsDown = false;
+        })
+
+        document.addEventListener("keydown", function (e) {
+            if (e.keyCode == 32) {
+                if (nitro) return
+                nitro = true;
+            }
+        })
+
+        document.addEventListener("keyup", function (e) {
+            if (e.keyCode == 32) {
+                nitro = false;
+            }
+        })
+    } else {
+        mobileDevice = true;
+        var options = {
+            zone: document.getElementById('zone_joystick'),
+            color: 'blue',
+            mode: 'static',
+            position: { left: '10%', bottom: '10%' },
+            size: 100,
+        };
+        manager = nipplejs.create(options);
+        manager.on("move",function(evt,data){
+            angle = -(data.angle.degree + 90) //- 180;
+        })
+        
+        // _canvas.addEventListener("touchstart", handleStart);
+        // _canvas.addEventListener("touchmove", handleMove);
+        // _canvas.addEventListener("touchend", handleEnd);
+        // _canvas.addEventListener("touchcancel", handleCancel);
+    }
+
     player = new rectangle(_canvas.width / 2, _canvas.height / 2, 50, 7);
     cap = new ellipse(0, 0, 20, 20);
     eye1 = new ellipse(-7, 0, 7, 7);
@@ -73,9 +132,9 @@ function create() {
     healthBar = new percentageBar(0, 27, 50, 3.5);
     xpBar = new circularLevelBar(player.x, player.y, 32);
 
-    speedBar = new percentageBar(100, _canvas.height - 70, 140, 10, 2);
-    rangeBar = new percentageBar(100, _canvas.height - 50, 140, 10, 2);
-    movementSpeedBar = new percentageBar(100, _canvas.height - 30, 140, 10, 2);
+    // speedBar = new percentageBar(100, _canvas.height - 70, 140, 10, 2);
+    // rangeBar = new percentageBar(100, _canvas.height - 50, 140, 10, 2);
+    // movementSpeedBar = new percentageBar(100, _canvas.height - 30, 140, 10, 2);
 
     levelBar = new percentageBar(158, 15, 300, 18, 2);
     levelBar.fillStyle("#dcdde1")
@@ -88,59 +147,59 @@ function create() {
     levelText.fontBorder = true;
     levelText.bold = true;
 
-    pointsText = new Text("x" + availablePoints, speedBar.x - speedBar.width / 2, speedBar.y - 30, 25);
-    pointsText.fillStyle("transparent");
-    pointsText.family = 'cursive';
-    pointsText.strokeStyle("transparent");
-    pointsText.fontBorderColor = '#000';
-    pointsText.fontBorder = true;
-    pointsText.bold = true;
-    pointsText.fontBorderWidth = 1.5;
+    // pointsText = new Text("x" + availablePoints, speedBar.x - speedBar.width / 2, speedBar.y - 30, 25);
+    // pointsText.fillStyle("transparent");
+    // pointsText.family = 'cursive';
+    // pointsText.strokeStyle("transparent");
+    // pointsText.fontBorderColor = '#000';
+    // pointsText.fontBorder = true;
+    // pointsText.bold = true;
+    // pointsText.fontBorderWidth = 1.5;
 
-    speedText = new Text("Pointer Speed", speedBar.x + speedBar.width / 2 + 10, speedBar.y - speedBar.height / 2);
-    speedText.fillStyle("#8e44ad")
-    speedText.opacity(0, 0);
-    rangeText = new Text("Pointer Range", rangeBar.x + rangeBar.width / 2 + 10, rangeBar.y - rangeBar.height / 2);
-    rangeText.fillStyle("#8e44ad")
-    rangeText.opacity(0, 0);
-    movementSpeedText = new Text("Body Speed", movementSpeedBar.x + movementSpeedBar.width / 2 + 10, movementSpeedBar.y - movementSpeedBar.height / 2, 20);
-    movementSpeedText.fillStyle("#8e44ad")
-    movementSpeedText.opacity(0, 0);
+    // speedText = new Text("Pointer Speed", speedBar.x + speedBar.width / 2 + 10, speedBar.y - speedBar.height / 2);
+    // speedText.fillStyle("#8e44ad")
+    // speedText.opacity(0, 0);
+    // rangeText = new Text("Pointer Range", rangeBar.x + rangeBar.width / 2 + 10, rangeBar.y - rangeBar.height / 2);
+    // rangeText.fillStyle("#8e44ad")
+    // rangeText.opacity(0, 0);
+    // movementSpeedText = new Text("Body Speed", movementSpeedBar.x + movementSpeedBar.width / 2 + 10, movementSpeedBar.y - movementSpeedBar.height / 2, 20);
+    // movementSpeedText.fillStyle("#8e44ad")
+    // movementSpeedText.opacity(0, 0);
 
-    speedTween = speedText.tween.add({ _fillOpacity: 0 }, { _fillOpacity: 1 }, 10);
-    rangeTween = rangeText.tween.add({ _fillOpacity: 0 }, { _fillOpacity: 1 }, 10);
-    movementSpeedTween = movementSpeedText.tween.add({ _fillOpacity: 0 }, { _fillOpacity: 1 }, 10);
+    // speedTween = speedText.tween.add({ _fillOpacity: 0 }, { _fillOpacity: 1 }, 10);
+    // rangeTween = rangeText.tween.add({ _fillOpacity: 0 }, { _fillOpacity: 1 }, 10);
+    // movementSpeedTween = movementSpeedText.tween.add({ _fillOpacity: 0 }, { _fillOpacity: 1 }, 10);
 
-    speedBar.primaryColor("#2ecc71");
-    rangeBar.primaryColor("#3498db");
-    movementSpeedBar.primaryColor("#e74c3c");
+    // speedBar.primaryColor("#2ecc71");
+    // rangeBar.primaryColor("#3498db");
+    // movementSpeedBar.primaryColor("#e74c3c");
 
-    speedBar.secondaryColor("#dcdde1");
-    rangeBar.secondaryColor("#dcdde1");
-    movementSpeedBar.secondaryColor("#dcdde1");
+    // speedBar.secondaryColor("#dcdde1");
+    // rangeBar.secondaryColor("#dcdde1");
+    // movementSpeedBar.secondaryColor("#dcdde1");
 
     levelBar.primaryColor("#686de0");
     levelBar.secondaryColor("transparent");
 
 
 
-    speedText.size(15);
-    rangeText.size(15);
-    movementSpeedText.size(15);
+    // speedText.size(15);
+    // rangeText.size(15);
+    // movementSpeedText.size(15);
 
 
     levelBar.health = 0;
 
-    speedText.padding = rangeText.padding = movementSpeedText.padding = 4;
+    // speedText.padding = rangeText.padding = movementSpeedText.padding = 4;
 
-    speedBar.health = 100 / 6;
-    rangeBar.health = 100 / 6;
-    movementSpeedBar.health = 100 / 6;
+    // speedBar.health = 100 / 6;
+    // rangeBar.health = 100 / 6;
+    // movementSpeedBar.health = 100 / 6;
 
-    //healthBar.border = false;
-    speedBar.opacity(0.5, 0.5);
-    rangeBar.opacity(0.5, 0.5);
-    movementSpeedBar.opacity(0.5, 0.5);
+    // //healthBar.border = false;
+    // speedBar.opacity(0.5, 0.5);
+    // rangeBar.opacity(0.5, 0.5);
+    // movementSpeedBar.opacity(0.5, 0.5);
 
     eye1.borderWidth = 3;
     eye2.borderWidth = 3;
@@ -177,13 +236,13 @@ function create() {
     //player.addChild(healthBar);
     levelBar.addChild(levelText)
     stage.addChild(player);
-    stage.addChild(pointsText);
-    stage.addChild(speedBar);
-    stage.addChild(rangeBar);
-    stage.addChild(movementSpeedBar);
-    stage.addChild(speedText)
-    stage.addChild(rangeText)
-    stage.addChild(movementSpeedText);
+    // stage.addChild(pointsText);
+    // stage.addChild(speedBar);
+    // stage.addChild(rangeBar);
+    // stage.addChild(movementSpeedBar);
+    // stage.addChild(speedText)
+    // stage.addChild(rangeText)
+    // stage.addChild(movementSpeedText);
     stage.addChild(levelBar)
 
     let color = 3;
@@ -206,73 +265,73 @@ function create() {
 
     // event handlers
 
-    speedBar.on("mouseover", function () {
-        speedBar.opacity(1, 1);
-        speedTween.from._fillOpacity = 0;
-        speedTween.to._fillOpacity = 1;
-        speedText.tween.start(speedTween);
-    })
-    speedBar.on("mouseout", function () {
-        speedBar.opacity(0.5, 0.5);
-        speedTween.from._fillOpacity = 1;
-        speedTween.to._fillOpacity = 0;
-        speedText.tween.start(speedTween);
-    })
+    // speedBar.on("mouseover", function () {
+    //     speedBar.opacity(1, 1);
+    //     speedTween.from._fillOpacity = 0;
+    //     speedTween.to._fillOpacity = 1;
+    //     speedText.tween.start(speedTween);
+    // })
+    // speedBar.on("mouseout", function () {
+    //     speedBar.opacity(0.5, 0.5);
+    //     speedTween.from._fillOpacity = 1;
+    //     speedTween.to._fillOpacity = 0;
+    //     speedText.tween.start(speedTween);
+    // })
 
-    rangeBar.on("mouseover", function () {
-        rangeBar.opacity(1, 1);
-        rangeTween.from._fillOpacity = 0;
-        rangeTween.to._fillOpacity = 1;
-        rangeText.tween.start(rangeTween);
-    })
-    rangeBar.on("mouseout", function () {
-        rangeBar.opacity(0.5, 0.5);
-        rangeTween.from._fillOpacity = 1;
-        rangeTween.to._fillOpacity = 0;
-        rangeText.tween.start(rangeTween);
-    })
+    // rangeBar.on("mouseover", function () {
+    //     rangeBar.opacity(1, 1);
+    //     rangeTween.from._fillOpacity = 0;
+    //     rangeTween.to._fillOpacity = 1;
+    //     rangeText.tween.start(rangeTween);
+    // })
+    // rangeBar.on("mouseout", function () {
+    //     rangeBar.opacity(0.5, 0.5);
+    //     rangeTween.from._fillOpacity = 1;
+    //     rangeTween.to._fillOpacity = 0;
+    //     rangeText.tween.start(rangeTween);
+    // })
 
-    movementSpeedBar.on("mouseover", function () {
-        movementSpeedBar.opacity(1, 1);
-        movementSpeedTween.from._fillOpacity = 0;
-        movementSpeedTween.to._fillOpacity = 1;
-        movementSpeedText.tween.start(movementSpeedTween);
+    // movementSpeedBar.on("mouseover", function () {
+    //     movementSpeedBar.opacity(1, 1);
+    //     movementSpeedTween.from._fillOpacity = 0;
+    //     movementSpeedTween.to._fillOpacity = 1;
+    //     movementSpeedText.tween.start(movementSpeedTween);
 
-    })
-    movementSpeedBar.on("mouseout", function () {
-        movementSpeedBar.opacity(0.5, 0.5);
-        movementSpeedTween.from._fillOpacity = 1;
-        movementSpeedTween.to._fillOpacity = 0;
-        movementSpeedText.tween.start(movementSpeedTween);
-    })
+    // })
+    // movementSpeedBar.on("mouseout", function () {
+    //     movementSpeedBar.opacity(0.5, 0.5);
+    //     movementSpeedTween.from._fillOpacity = 1;
+    //     movementSpeedTween.to._fillOpacity = 0;
+    //     movementSpeedText.tween.start(movementSpeedTween);
+    // })
 
-    speedBar.on("click", function () {
+    // speedBar.on("click", function () {
 
-        if (availablePoints == 0 || speedBar.health >= 100 || usedPoints == 10) return;
-        usedPoints += 1;
-        _speed += 20;
-        speedBar.health += 100 / 6;
-        availablePoints--;
-        pointsText.string = "x" + availablePoints;
-    })
+    //     if (availablePoints == 0 || speedBar.health >= 100 || usedPoints == 10) return;
+    //     usedPoints += 1;
+    //     _speed += 20;
+    //     speedBar.health += 100 / 6;
+    //     availablePoints--;
+    //     pointsText.string = "x" + availablePoints;
+    // })
 
-    rangeBar.on("click", function () {
-        if (availablePoints == 0 || rangeBar.health >= 100 || usedPoints == 10) return;
-        usedPoints += 1;
-        _range += 60;
-        rangeBar.health += 100 / 6;
-        availablePoints--;
-        pointsText.string = "x" + availablePoints;
-    })
+    // rangeBar.on("click", function () {
+    //     if (availablePoints == 0 || rangeBar.health >= 100 || usedPoints == 10) return;
+    //     usedPoints += 1;
+    //     _range += 60;
+    //     rangeBar.health += 100 / 6;
+    //     availablePoints--;
+    //     pointsText.string = "x" + availablePoints;
+    // })
 
-    movementSpeedBar.on("click", function () {
-        if (availablePoints == 0 || movementSpeedBar.health >= 100 || usedPoints == 10) return;
-        usedPoints += 1;
-        speed += 0.3;
-        movementSpeedBar.health += 100 / 6;
-        availablePoints--;
-        pointsText.string = "x" + availablePoints;
-    })
+    // movementSpeedBar.on("click", function () {
+    //     if (availablePoints == 0 || movementSpeedBar.health >= 100 || usedPoints == 10) return;
+    //     usedPoints += 1;
+    //     speed += 0.3;
+    //     movementSpeedBar.health += 100 / 6;
+    //     availablePoints--;
+    //     pointsText.string = "x" + availablePoints;
+    // })
 
 
     // end of event handlers
@@ -286,17 +345,35 @@ function create() {
     socket.emit("pre_data", { clientWidth: _canvas.width, clientHeight: _canvas.height })
 
     socket.on('update_data', function (data) {
-        socket.emit('update_data', { angle: angle + 180 });
+        connectedToServer = true;
+        socket.emit('update_data', { angle: angle + 180, nitro: nitro });
+
+        if (data["player_list"][socket.id].dead) {
+            alert("you died :(");
+            setTimeout(function () {
+                location.reload();
+            }, 1000);
+
+            return;
+        }
+
         food = data["food_data"];
         for (var id in others) {
+
             if (data["player_list"][id] == undefined) {
                 delete others[id];
             }
         }
         for (var id in data["player_list"]) {
+
             // if (id != socket.id) {
             if (!others[id]) {
                 others[id] = new Player(data["player_list"][id]);
+                others[id].list.polys = data["player_list"][id].polys;
+                others[id].list.circles = data["player_list"][id].circles;
+                // polys[id] = new P(new V(others[id].x + rcos(32, -(others[id].angle - 90)), others[id].y + rsin(-32, -(others[id].angle - 90))), [
+                //     new V(0, 0), new V(30, 0), new V(0, 30)
+                // ]);
                 continue;
             }
             others[id].target.x = data["player_list"][id].x;
@@ -306,6 +383,10 @@ function create() {
             others[id].rotation.target = data["player_list"][id].angle;
             others[id].target.tip = data["player_list"][id].tip;
             others[id].freezed = data["player_list"][id].freezed;
+
+            others[id].list.polys = data["player_list"][id].polys;
+            others[id].list.circles = data["player_list"][id].circles;
+
             // }
         }
 
@@ -324,87 +405,20 @@ function create() {
 }
 
 function update() {
-    if (!mouse) return;
+    if (!connectedToServer) {
+        __Mahou__.fillText("connecting to server...", _canvas.width / 2, _canvas.height / 2);
+        return;
+    };
 
     // face decoration updates
-    if(!others[socket.id].freezed)
-    angle = Math.atan2(mouse.x - player.x, - (mouse.y - player.y)) * (180 / Math.PI);
+    if (!others[socket.id].freezed && !mobileDevice)
+        angle = Math.atan2(mouse.x - player.x, - (mouse.y - player.y)) * (180 / Math.PI);
     // x -= speed * Math.cos(d2r(angle));
     // y -= speed * Math.sin(d2r(angle));
     tip.rotation = angle - 180;
     eyeBall1.rotation = angle - 90 - 180 - 45;
     eyeBall2.rotation = angle - 90 - 180 - 45;
     angle2 = -(angle - 90) + 180;
-
-
-    // if (nitro && fuel > 0) {
-    //     fuel -= 0.5;
-    //     speed = 6;
-    // }
-    // else {
-    //     speed = 2
-    // };
-
-    // if (keys[37] || keys[65]) {
-    //     x -= speed;
-    // } else if (keys[39] || keys[68]) {
-    //     x += speed;
-    // }
-
-    // if (keys[38] || keys[87]) {
-    //     y -= speed;
-    // } else if (keys[40] || keys[83]) {
-    //     y += speed;
-    // }
-
-    // if (x >= world_width - player.width / 2 + 3) {
-    //     x = world_width - player.width / 2 + 3;
-    // } else if (x <= player.width / 2 - 3) {
-    //     x = player.width / 2 - 3;
-    // }
-
-    // if (y > world_height - player.width / 2 + 3) {
-    //     y = world_height - player.width / 2 + 3;
-    // } else if (y <= player.width / 2 - 3) {
-    //     y = player.width / 2 - 3;
-    // }
-
-    // dx = tipX + rcos(tip.inRadius + tip.circumRadius * 2 + 30 + 10, angle2);
-    // dy = tipY - rsin(tip.inRadius + tip.circumRadius * 2 + 30 + 10, angle2);
-
-    //testPoint(player.x + rcos(_range + 50, angle), player.y - rsin(_range + 50, angle))
-    // if (!hasThrust) {
-    //     // thrustTime += 1;
-
-    //     // // if (span * (_range / _speed) % span != 0 && thrustTime == Math.floor(span * (_range / _speed))) {
-    //     // //     tipX += rcos(_range - dist(0, 0, tipX, tipY), angle);
-    //     // //     tipY += -rsin(_range - dist(0, 0, tipX, tipY), angle);
-    //     // //     console.log(dist(0, 0, tipX, tipY));
-    //     // // }
-    //     // if (thrustTime % span == 0) {
-    //     //     //console.log(dist(0, 0, tipX, tipY));
-    //     // }
-    //     // if (thrustTime >= span * (_range / _speed)) {
-    //     //     //console.log(dist(0, 0, tipX, tipY), thrustTime)
-    //     //     thrustTime = 0;
-    //     //     hasThrust = true;
-    //     //     tipX = 0;
-    //     //     tipY = 0;
-    //     //     keys[80] = 0;
-    //     // } else {
-    //     //     tipX = tip.x + rcos(_speed / span, angle2);
-    //     //     tipY = tip.y + -rsin(_speed / span, angle2);
-
-    //     // }
-
-    //     tipX += 30;
-    //     tipY += 30;
-    //     hasThrust = true;
-
-    // }else{
-    //     tipX = 0;
-    //     tipY = 0;
-    // }
 
     tip.x = others[socket.id].tip.x;
     tip.y = others[socket.id].tip.y;
@@ -414,17 +428,25 @@ function update() {
     moved();
     drawOthers();
     drawFood();
+
+    // for (var id in polys) {
+    //     __Mahou__.beginPath();
+    //     __Mahou__.moveTo(polys[id].points[0].x, polys[id].points[0].y);
+    //     for (var i = 1; i < polys[id].points.length; i++) {
+    //         __Mahou__.lineTo(polys[id].points[i].x, polys[id].points[i].y)
+    //     }
+    //     __Mahou__.fillStyle = 'black';
+    //     __Mahou__.fill();
+    //     if(id!= socket.id){
+    //         if(SAT.testPolygonPolygon(polys[socket.id], polys[id])){
+    //             alert("game over")
+    //         }
+    //     }
+    // }
+
     __Mahou__.restore();
     fixed();
-    //if(!hasThrust)
-    //testPoint(_canvas.width/2 + _range + player.width+ (-tip._origin.x) , _canvas.height/2 );
-    if (!hasThrust && keys[80]) {
-        x2 = player.x + tipX + rcos(tip.inRadius + 30 + 6, angle2);
-        y2 = player.y + tipY - rsin(tip.inRadius + 30 + 6, angle2);
-        testPoint(x2, y2, 'lightgreen');
-        Ellipse(x2, y2, 40, 40, true);
-    }
-    //testPoint(player.x + dx, player.y + dy, 'lightpink');
+
 }
 
 function moved() {
@@ -439,81 +461,6 @@ function moved() {
         __Mahou__.lineTo(world_width, 20 * i);
         __Mahou__.stroke();
     }
-
-
-
-    // for (var i = 0; i < statics.length; i++) {
-    //     if ((statics[i].x < (x + player.x + statics[i].inRadius) && statics[i].y < (y + player.y + statics[i].inRadius)) && (statics[i].x > (x - player.x - statics[i].inRadius) && statics[i].y > (y - player.y - statics[i].inRadius))) {
-    //         statics[i].draw();
-    //         if (!statics[i]) continue;
-    //         if (hasThrust) {
-    //             statics[i].invincible = true;
-    //             continue;
-    //         };
-
-    //         __Mahou__.translate(statics[i].x, statics[i].y);
-
-    //         if (checkCollision2(statics[i].path, player.x + dx, player.y + dy)) {
-    //             if (statics[i].invincible) {
-    //                 statics[i].invincible = false;
-    //                 switch (statics[i].sides()) {
-    //                     case 3: damage = 50; break;
-    //                     case 4: damage = 25; break;
-    //                     case 5: damage = 6.25; break;
-    //                     case 6: damage = 3.125; break;
-    //                 }
-    //                 if (statics[i].healthBar.visible == false) {
-    //                     statics[i].healthBar.visible = true;
-    //                     test = statics[i].healthBar.tween.add({ _fillOpacity: 0 }, { _fillOpacity: 1 }, 5);
-    //                     test.update = closure(function () {
-    //                         statics[index].healthBar.opacity(statics[index].healthBar._fillOpacity, statics[index].healthBar._fillOpacity);
-    //                     }, { index: i })
-    //                     statics[i].healthBar.tween.start(test);
-
-    //                 }
-    //                 statics[i].healthBar.health -= damage;
-    //             }
-    //         }
-
-    //         __Mahou__.translate(-statics[i].x, -statics[i].y);
-
-    //         if (statics[i].healthBar.health <= 0 && statics[i].alive) {
-    //             statics[i].alive = false;
-    //             switch (statics[i].sides()) {
-    //                 case 3: experience += 0.5; break;
-    //                 case 4: experience += 1; break;
-    //                 case 5: experience += 2; break;
-    //                 case 6: experience += 5; break;
-    //             }
-    //             levelBar.health = (experience / points_sc[level]) * 100;
-    //             if (experience >= points_sc[level]) {
-    //                 experience = experience - points_sc[level];
-    //                 xpBar.level = level * 10;
-    //                 level++;
-    //                 socket.emit("level_inc");
-    //                 levelBar.health = (experience / points_sc[level]) * 100;
-    //                 availablePoints++;
-    //                 levelText.string = "level " + level;
-    //                 pointsText.string = "x" + availablePoints;
-    //             }
-    //             test = statics[i].tween.add({ _fillOpacity: statics[i]._fillOpacity, _strokeOpacity: 1, circumRadius: statics[i].circumRadius }, { _fillOpacity: 0, _strokeOpacity: 0, circumRadius: 0 }, 10,
-    //                 (function (index) {
-    //                     return function () {
-    //                         statics.splice(index, 1);
-    //                     }
-    //                 })(i));
-
-    //             test.update = closure(function () {
-    //                 statics[index].radius(statics[index].circumRadius);
-    //                 statics[index].healthBar.opacity(statics[index]._fillOpacity, statics[index]._fillOpacity);
-    //             }, { index: i })
-    //             statics[i].tween.start(test);
-    //         }
-    //         //Ellipse(statics[i].x,statics[i].y,40,40,true);
-    //         // if (checkCollision({ x: x + dx, y: y + dy, circumRadius: tip.circumRadius }, statics[i])) {}
-
-    //     }
-    // }
 
     //end #mover
 }
@@ -539,55 +486,31 @@ function d2r(d) {
     return r;
 }
 
-document.addEventListener("mousedown", function () {
-    if (speedBar.mouseIsOver || rangeBar.mouseIsOver || movementSpeedBar.mouseIsOver) return;
-    hasThrust = false;
-    socket.emit("fire");
-})
 
-document.addEventListener("mouseup", function () {
-    mouseIsDown = false;
-})
 
-document.addEventListener("keydown", function (e) {
-    if (keys[e.keyCode]) return;
-    keys[e.keyCode] = 1
-    if (e.keyCode == 37 || e.keyCode == 65) {
-        socket.emit("key_left", 1)
-    } else if (e.keyCode == 39 || e.keyCode == 68) {
-        socket.emit("key_right", 1)
-    }
+// document.addEventListener("keyup", function (e) {
+//     if (!keys[e.keyCode]) return;
+//     keys[e.keyCode] = 0
+//     if (e.keyCode == 37 || e.keyCode == 65) {
+//         if (keys[39] || keys[68]) {
+//             socket.emit("key_left", 0)
+//             socket.emit("key_right", 1)
+//         } else
+//             socket.emit("key_left", 0)
+//     } else if (e.keyCode == 39 || e.keyCode == 68) {
+//         if (keys[37] || keys[65]) {
+//             socket.emit("key_right", 0)
+//             socket.emit("key_left", 1)
+//         } else
+//             socket.emit("key_right", 0)
+//     }
 
-    if (e.keyCode == 38 || e.keyCode == 87) {
-        socket.emit("key_up", 1)
-    } else if (e.keyCode == 40 || e.keyCode == 83) {
-        socket.emit("key_down", 1)
-    }
-})
-
-document.addEventListener("keyup", function (e) {
-    if (!keys[e.keyCode]) return;
-    keys[e.keyCode] = 0
-    if (e.keyCode == 37 || e.keyCode == 65) {
-        if (keys[39] || keys[68]) {
-            socket.emit("key_left", 0)
-            socket.emit("key_right", 1)
-        } else
-            socket.emit("key_left", 0)
-    } else if (e.keyCode == 39 || e.keyCode == 68) {
-        if (keys[37] || keys[65]) {
-            socket.emit("key_right", 0)
-            socket.emit("key_left", 1)
-        } else
-            socket.emit("key_right", 0)
-    }
-
-    if (e.keyCode == 38 || e.keyCode == 87) {
-        socket.emit("key_up", 0)
-    } else if (e.keyCode == 40 || e.keyCode == 83) {
-        socket.emit("key_down", 0)
-    }
-})
+//     if (e.keyCode == 38 || e.keyCode == 87) {
+//         socket.emit("key_up", 0)
+//     } else if (e.keyCode == 40 || e.keyCode == 83) {
+//         socket.emit("key_down", 0)
+//     }
+// })
 
 function forLoop(i, l, inc, func) {
     for (var j = i; j < l; j += inc) {
@@ -634,20 +557,48 @@ function Player(data) {
     this.rotation = { target: data.angle, current: data.angle }
     this.xpBar = new circularLevelBar(data.x, data.y, 32);
     this.level = 1;
+    this.list = {};
 
-    this.modify = function () {
+    this.modify = function (id) {
+
+        sides = this.level + 2;
+        // tip.origin(- tip.inRadius + cap.width/2 - xpBar.width/2 - 6,15 );
+        // var points = [];
+        // polys[id].pos = new V(this.x + this.tip.x + rcos( sides * 7 * Math.cos(Math.PI / sides) + 34,-(this.rotation.current - 90) ), this.y + this.tip.y + rsin( -( sides * 7 * Math.cos(Math.PI / sides) + 34),-(this.rotation.current - 90)) );
+
+        // points.push(new V(polys[id].pos.x + sides * 7, polys[id].pos.y + 0));
+        // for (var i = 1; i < sides; i++) {
+        //     points.push(new V(polys[id].pos.x + sides * 7 * Math.cos(i * (Math.PI * 2) / sides), polys[id].pos.y + sides * 7 * Math.sin(i * (Math.PI * 2) / sides)));
+        // }
+
+        // polys[id].setPoints(points);
+
+        // polys[id].rotate(d2r(this.rotation.current - 90 ))
+
         this.x += (this.target.x - this.x) / 2;
         this.y += (this.target.y - this.y) / 2;
 
         this.tip.x += (this.target.tip.x - this.tip.x) / 2;
         this.tip.y += (this.target.tip.y - this.tip.y) / 2;
 
-        
-
         this.rotation.current += (((((this.rotation.target - this.rotation.current) % 360) + 540) % 360) - 180) / 2;
 
-        sides = this.level + 2;
-        // tip.origin(- tip.inRadius + cap.width/2 - xpBar.width/2 - 6,15 );
+        // for (var item in this.list.polys) {
+        //     __Mahou__.beginPath();
+        //     __Mahou__.moveTo(this.list.polys[item].points[0].x, this.list.polys[item].points[0].y);
+        //     for (var i = 1; i < this.list.polys[item].points.length; i++) {
+        //         __Mahou__.lineTo(this.list.polys[item].points[i].x, this.list.polys[item].points[i].y);
+        //     }
+        //     __Mahou__.fillStyle = '#000';
+        //     __Mahou__.fill();
+        // }
+        // for (var item in this.list.circles) {
+        //     __Mahou__.beginPath();
+        //     __Mahou__.arc(this.list.circles[item].pos.x, this.list.circles[item].pos.y, this.list.circles[item].r, 0, 2 * Math.PI);
+        //     __Mahou__.fillStyle = 'red';
+        //     __Mahou__.fill();
+        // }
+
     }
     this.draw = function () {
 
@@ -702,7 +653,7 @@ function Player(data) {
         __Mahou__.save();
         __Mahou__.translate(this.x + this.tip.x, this.y + this.tip.y);
         __Mahou__.rotate((-Math.PI / 2) + ((this.rotation.current - 180 - 90) - 90) * Math.PI / 180);
-        __Mahou__.translate(sides*7 * Math.cos(Math.PI / sides) + 34 , - (15) + 15);
+        __Mahou__.translate(sides * 7 * Math.cos(Math.PI / sides) + 34, 0);
         __Mahou__.beginPath();
         __Mahou__.moveTo(sides * 7, 0);
         for (var i = 1; i < sides; i++) {
@@ -713,15 +664,12 @@ function Player(data) {
         __Mahou__.stroke();
         __Mahou__.restore();
 
-
-
-
     }
 }
 
 function drawOthers() {
     for (var enemy in others) {
-        others[enemy].modify();
+        others[enemy].modify(enemy);
         if (enemy != socket.id)
             others[enemy].draw();
     }
@@ -738,3 +686,5 @@ function drawFood() {
         __Mahou__.stroke();
     }
 }
+
+

@@ -11,7 +11,7 @@ let __Mahou__;
 let frameRate = 60;
 let updateInterval;
 let stage;
-let mouse;
+let mouse = { x: 0, y: 0 };
 let resources = { "images": [] };
 let eventQueue = {
     "click": [],
@@ -513,11 +513,11 @@ class polygon extends MahouObject {
 }
 
 class percentageBar extends MahouObject {
-    constructor(x, y, width, height,bw) {
+    constructor(x, y, width, height, bw) {
         super(x, y, width, height)
         this.health = 100;
-        var health = new rectangle(0 , 0, width - bw, height - bw);
-        var damage = new rectangle(0 , 0, width - bw, height - bw);
+        var health = new rectangle(0, 0, width - bw, height - bw);
+        var damage = new rectangle(0, 0, width - bw, height - bw);
         health.fillStyle("#4cd137");
         damage.fillStyle("#e84118");
 
@@ -531,7 +531,7 @@ class percentageBar extends MahouObject {
 
             health.width = this.health < 0 ? 0 : this.health / 100 * (width - bw);
             __Mahou__.beginPath();
-            __Mahou__.rect(this._absPos.x - this._origin.x , this._absPos.y - this._origin.y , this.width , this.height );
+            __Mahou__.rect(this._absPos.x - this._origin.x, this._absPos.y - this._origin.y, this.width, this.height);
             __Mahou__.closePath();
             __Mahou__.fill();
             if (mouse) {
@@ -573,25 +573,25 @@ class circularLevelBar extends MahouObject {
     constructor(x, y, radius) {
         super(x, y, 2 * radius, 2 * radius)
         this.level = 0;
-        this._stroke = function(){}
-        this.executeBluePrint = function(){
-            
+        this._stroke = function () { }
+        this.executeBluePrint = function () {
+
             __Mahou__.beginPath();
-            __Mahou__.arc(this.x,this.y,radius,0,2 * Math.PI);
+            __Mahou__.arc(this.x, this.y, radius, 0, 2 * Math.PI);
             __Mahou__.closePath();
             __Mahou__.lineWidth = 2.5;
             __Mahou__.strokeStyle = "#3d3b3b";
             __Mahou__.stroke();
             __Mahou__.beginPath();
-            __Mahou__.arc(this.x,this.y,radius - 1,0,2 * Math.PI);
+            __Mahou__.arc(this.x, this.y, radius - 1, 0, 2 * Math.PI);
             __Mahou__.closePath();
             __Mahou__.save();
             __Mahou__.clip();
             __Mahou__.fillStyle = "#3498db";
-            __Mahou__.fillRect(this.x - radius ,this.y + radius - (this.level*radius*2)/100 ,100,100);
-            __Mahou__.restore();     
+            __Mahou__.fillRect(this.x - radius, this.y + radius - (this.level * radius * 2) / 100, 100, 100);
+            __Mahou__.restore();
         }
-        this.rotate = function(){}
+        this.rotate = function () { }
     }
 }
 
@@ -627,21 +627,21 @@ class Text extends MahouObject {
         this.executeBluePrint = function () {
 
             this.height = size + this.padding * 2;
-            if(this.bold)
-            __Mahou__.font = "bold "+size + "px " + this.family;
+            if (this.bold)
+                __Mahou__.font = "bold " + size + "px " + this.family;
             else
-            __Mahou__.font = size + "px " + this.family;
+                __Mahou__.font = size + "px " + this.family;
             w = __Mahou__.measureText(this.string).width;
             this.width = w + this.padding * 2;
             __Mahou__.beginPath();
             __Mahou__.rect(this._absPos.x, this._absPos.y - 3 - this.padding, this.width, this.height);
             __Mahou__.closePath();
-            if(this.colors.fill.substring(0,4)!='rgba')
-            this.changeColor(this.colors.fill);
+            if (this.colors.fill.substring(0, 4) != 'rgba')
+                this.changeColor(this.colors.fill);
             __Mahou__.fill();
             this.changeColor(this.fontColor)
             __Mahou__.fillText(this.string, this._absPos.x + this.padding, this._absPos.y + size / 2 + 2);
-            if(!this.fontBorder)return
+            if (!this.fontBorder) return
             rgb = hexToRgb(colorConversion(this.fontBorderColor));
             __Mahou__.lineWidth = this.fontBorderWidth;
             __Mahou__.strokeStyle = "rgba(" + rgb.r + "," + rgb.g + "," + rgb.b + "," + this._fillOpacity + ")";
