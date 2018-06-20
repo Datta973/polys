@@ -200,7 +200,7 @@ function resend() {
             }
         } else {
             if (players[player].nitro && players[player].experience > 0) {
-                players[player].experience -= 0.01;
+                players[player].experience -= 0.1;
                 speed = 10;
             } else {
                 speed = 5;

@@ -79,11 +79,11 @@ function setup() {
 
 function create() {
 
-    
+
 
     if (!mobilecheck()) {
 
-      
+
 
         document.addEventListener("mousedown", function () {
             // if (speedBar.mouseIsOver || rangeBar.mouseIsOver || movementSpeedBar.mouseIsOver) return;
@@ -123,13 +123,13 @@ function create() {
         _canvas.style.position = 'absolute';
         manager = nipplejs.create(options);
         manager.on("move", function (evt, data) {
-            if(hasThrust)
-            angle = -(data.angle.degree + 90) //- 180;
+            if (hasThrust)
+                angle = -(data.angle.degree + 90) //- 180;
         })
         levelTextWidth = 25;
         levelBarHeight = 30;
 
-        
+
 
         document.getElementById("nitro").addEventListener("touchstart", function () {
             // if (speedBar.mouseIsOver || rangeBar.mouseIsOver || movementSpeedBar.mouseIsOver) return;
@@ -373,7 +373,7 @@ function create() {
     // *** socket ***
     others = {};
 
-    
+
     socket.emit("start_game", { clientWidth: _canvas.width, clientHeight: _canvas.height, username: username })
 
     socket.on('update_data', function (data) {
@@ -501,6 +501,15 @@ function fixed() {
         dynamics[i].draw();
     }
 
+
+    __Mahou__.fillStyle = 'white';
+    __Mahou__.strokeStyle = 'black';
+    __Mahou__.lineWidth = '1.5';
+    __Mahou__.font = "25px cursive bold";
+    __Mahou__.fillText(others[socket.id].username, _canvas.width / 2 - 32, _canvas.height / 2 - 45);
+    __Mahou__.strokeText(others[socket.id].username, _canvas.width / 2 - 32, _canvas.height / 2 - 45)
+
+
     // if (!hasThrust) {
     //     __Mahou__.fillStyle = 'black;'
     //     __Mahou__.fillRect(player.x + dx + tipX - 5, player.y + dy + tipY - 5, 10, 10)
@@ -627,6 +636,10 @@ function Player(data) {
         //     __Mahou__.fill();
         // }
 
+
+
+
+
     }
     this.draw = function () {
 
@@ -691,10 +704,11 @@ function Player(data) {
         __Mahou__.fill();
         __Mahou__.stroke();
         __Mahou__.restore();
+
         __Mahou__.fillStyle = 'white';
         __Mahou__.strokeStyle = 'black';
-        __Mahou__.lineWidth = '1.5'
-        __Mahou__.font = "25px cursive bold"
+        __Mahou__.lineWidth = '1.5';
+        __Mahou__.font = "25px cursive bold";
         __Mahou__.fillText(this.username, this.x - 32, this.y - 45);
         __Mahou__.strokeText(this.username, this.x - 32, this.y - 45);
 
@@ -713,9 +727,9 @@ function drawFood() {
     for (let pellet of food) {
         __Mahou__.beginPath();
         __Mahou__.arc(pellet.x, pellet.y, pellet.radius, 0, 2 * Math.PI);
-        __Mahou__.fillStyle = "#e67e22";
+        __Mahou__.fillStyle = "#3498db"//"#9b59b6"//"#e67e22";
         __Mahou__.fill();
-        __Mahou__.strokeStyle = '#34495e';
+        __Mahou__.strokeStyle = "#000"//'#34495e';
         __Mahou__.lineWidth = 3;
         __Mahou__.stroke();
     }
