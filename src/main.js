@@ -58,6 +58,9 @@ let V = SAT.Vector;
 let P = SAT.Polygon;
 let polys = {};
 let manager;
+let username = "";
+let levelTextWidth = 21;
+let levelBarHeight = 18;
 
 window.mobilecheck = function () {
     var check = false;
@@ -76,7 +79,12 @@ function setup() {
 
 function create() {
 
+    
+
     if (!mobilecheck()) {
+
+      
+
         document.addEventListener("mousedown", function () {
             // if (speedBar.mouseIsOver || rangeBar.mouseIsOver || movementSpeedBar.mouseIsOver) return;
             hasThrust = false;
@@ -100,24 +108,47 @@ function create() {
             }
         })
     } else {
+
+        document.getElementById("nitro").style.display = 'block';
+        document.getElementById("fire").style.display = 'block';
+
         mobileDevice = true;
         var options = {
             zone: document.getElementById('zone_joystick'),
             color: 'blue',
             mode: 'static',
-            position: { left: '10%', bottom: '10%' },
+            position: { left: '15%', bottom: '15%' },
             size: 100,
         };
+        _canvas.style.position = 'absolute';
         manager = nipplejs.create(options);
-        manager.on("move",function(evt,data){
+        manager.on("move", function (evt, data) {
+            if(hasThrust)
             angle = -(data.angle.degree + 90) //- 180;
         })
+        levelTextWidth = 25;
+        levelBarHeight = 30;
+
         
-        // _canvas.addEventListener("touchstart", handleStart);
+
+        document.getElementById("nitro").addEventListener("touchstart", function () {
+            // if (speedBar.mouseIsOver || rangeBar.mouseIsOver || movementSpeedBar.mouseIsOver) return;
+            nitro = true;
+        });
+        document.getElementById("nitro").addEventListener("touchend", function () {
+            // if (speedBar.mouseIsOver || rangeBar.mouseIsOver || movementSpeedBar.mouseIsOver) return;
+            nitro = false;
+        });
+        document.getElementById("fire").addEventListener("touchstart", function () {
+            // if (speedBar.mouseIsOver || rangeBar.mouseIsOver || movementSpeedBar.mouseIsOver) return;
+            socket.emit("fire");
+        });
         // _canvas.addEventListener("touchmove", handleMove);
         // _canvas.addEventListener("touchend", handleEnd);
         // _canvas.addEventListener("touchcancel", handleCancel);
     }
+
+    username = prompt("Your name ? : ", username);
 
     player = new rectangle(_canvas.width / 2, _canvas.height / 2, 50, 7);
     cap = new ellipse(0, 0, 20, 20);
@@ -136,11 +167,11 @@ function create() {
     // rangeBar = new percentageBar(100, _canvas.height - 50, 140, 10, 2);
     // movementSpeedBar = new percentageBar(100, _canvas.height - 30, 140, 10, 2);
 
-    levelBar = new percentageBar(158, 15, 300, 18, 2);
+    levelBar = new percentageBar(153, 18, 300, levelBarHeight, 2);
     levelBar.fillStyle("#dcdde1")
 
-    levelText = new Text("level " + level, -20, -5, 21);
-    levelText.family = 'cursive';
+    levelText = new Text("level " + level, -20, -5, levelTextWidth);
+    levelText.family = (levelTextWidth > 21) ? 'helvetica' : 'cursive';
     levelText.fontBorderColor = '#000';
     levelText.fillStyle("transparent");
     levelText.strokeStyle("transparent");
@@ -342,20 +373,11 @@ function create() {
     // *** socket ***
     others = {};
 
-    socket.emit("pre_data", { clientWidth: _canvas.width, clientHeight: _canvas.height })
+    
+    socket.emit("start_game", { clientWidth: _canvas.width, clientHeight: _canvas.height, username: username })
 
     socket.on('update_data', function (data) {
         connectedToServer = true;
-        socket.emit('update_data', { angle: angle + 180, nitro: nitro });
-
-        if (data["player_list"][socket.id].dead) {
-            alert("you died :(");
-            setTimeout(function () {
-                location.reload();
-            }, 1000);
-
-            return;
-        }
 
         food = data["food_data"];
         for (var id in others) {
@@ -369,11 +391,6 @@ function create() {
             // if (id != socket.id) {
             if (!others[id]) {
                 others[id] = new Player(data["player_list"][id]);
-                others[id].list.polys = data["player_list"][id].polys;
-                others[id].list.circles = data["player_list"][id].circles;
-                // polys[id] = new P(new V(others[id].x + rcos(32, -(others[id].angle - 90)), others[id].y + rsin(-32, -(others[id].angle - 90))), [
-                //     new V(0, 0), new V(30, 0), new V(0, 30)
-                // ]);
                 continue;
             }
             others[id].target.x = data["player_list"][id].x;
@@ -383,9 +400,7 @@ function create() {
             others[id].rotation.target = data["player_list"][id].angle;
             others[id].target.tip = data["player_list"][id].tip;
             others[id].freezed = data["player_list"][id].freezed;
-
-            others[id].list.polys = data["player_list"][id].polys;
-            others[id].list.circles = data["player_list"][id].circles;
+            others[id].username = data["player_list"][id].username;
 
             // }
         }
@@ -399,6 +414,14 @@ function create() {
         tip.origin(- tip.inRadius + cap.width / 2 - xpBar.width / 2 - 6, 15);
         _range = sides * 30;
         _speed = sides * 30;
+
+
+        socket.emit('update_data', { angle: angle + 180, nitro: nitro });
+    })
+
+    socket.on("death", function () {
+        username = prompt("Oops you died...Your name ? : ", username);
+        socket.emit("start_game", { clientWidth: _canvas.width, clientHeight: _canvas.height, username: username })
     })
 
     // *** socket ***
@@ -410,6 +433,11 @@ function update() {
         return;
     };
 
+    if (!others[socket.id]) {
+        // console.log("this is worse")
+        //replay();
+        return;
+    }
     // face decoration updates
     if (!others[socket.id].freezed && !mobileDevice)
         angle = Math.atan2(mouse.x - player.x, - (mouse.y - player.y)) * (180 / Math.PI);
@@ -663,6 +691,12 @@ function Player(data) {
         __Mahou__.fill();
         __Mahou__.stroke();
         __Mahou__.restore();
+        __Mahou__.fillStyle = 'white';
+        __Mahou__.strokeStyle = 'black';
+        __Mahou__.lineWidth = '1.5'
+        __Mahou__.font = "25px cursive bold"
+        __Mahou__.fillText(this.username, this.x - 32, this.y - 45);
+        __Mahou__.strokeText(this.username, this.x - 32, this.y - 45);
 
     }
 }
@@ -685,6 +719,10 @@ function drawFood() {
         __Mahou__.lineWidth = 3;
         __Mahou__.stroke();
     }
+}
+
+function replay() {
+
 }
 
 

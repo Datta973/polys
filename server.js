@@ -42,25 +42,25 @@ app.get('/', function (req, res) {
 
 
 io.on('connection', function (socket) {
-    players[socket.id] = {
-        x: 0,
-        y: 0,
-        angle: 0,
-        tip: { x: 0, y: 0 },
-        experience: 0,
-        level: 1,
-        freezed: false,
-        nitro: false,
-        dead: false,
-    }
+    // players[socket.id] = {
+    //     x: 0,
+    //     y: 0,
+    //     angle: 0,
+    //     tip: { x: 0, y: 0 },
+    //     experience: 0,
+    //     level: 1,
+    //     freezed: false,
+    //     nitro: false,
+    //     dead: false,
+    // }
 
-    temp_data[socket.id] = {
-        clientWidth: 1024,
-        clientHeight: 1024,
-        angle: 0,
-        isFiring: false,
-        back: false
-    }
+    // temp_data[socket.id] = {
+    //     clientWidth: 1024,
+    //     clientHeight: 1024,
+    //     angle: 0,
+    //     isFiring: false,
+    //     back: false
+    // }
 
     // polys[socket.id] = new P(new V(), [
     //     new V(0, 0), new V(30, 0), new V(0, 30)
@@ -68,24 +68,58 @@ io.on('connection', function (socket) {
 
     // circles[socket.id] = new C(new V(), 32);
 
-    socket.on("pre_data", function (data) {
+    socket.on("start_game", function (data) {
+
+        players[socket.id] = {
+            x: 0,
+            y: 0,
+            angle: 0,
+            tip: { x: 0, y: 0 },
+            experience: 0,
+            level: 1,
+            freezed: false,
+            nitro: false,
+            dead: false,
+            username:data.username
+        }
+        temp_data[socket.id] = {
+            clientWidth: 1024,
+            clientHeight: 1024,
+            angle: 0,
+            isFiring: false,
+            back: false
+        }
+
         temp_data[socket.id].clientWidth = data.clientWidth;
         temp_data[socket.id].clientHeight = data.clientHeight;
+
+
+
     })
 
     socket.on('disconnect', function () {
         socket.removeAllListeners("update_data");
+        socket.removeAllListeners('fire');
+
         delete players[socket.id];
         delete temp_data[socket.id];
-        // delete polys[socket.id];
-        // delete circles[socket.id];
     })
+
     socket.on('update_data', function (data) {
+        if(!players[socket.id])return;
         for (var prop in data) {
             players[socket.id][prop] = data[prop];
         }
-        // console.log(players[socket.id].angle)
     })
+
+    socket.on("fire", function () {
+        if(!players[socket.id])return;
+        if(players[socket.id].freezed)return;
+        temp_data[socket.id].isFiring = true;
+        temp_data[socket.id].angle = players[socket.id].angle;
+        players[socket.id].freezed = true;
+    })
+
 
     // socket.on("key_left", function (key) {
     //     players[socket.id].speedX = -4 * key;
@@ -102,11 +136,7 @@ io.on('connection', function (socket) {
     // socket.on("level_inc", function () {
     //     players[socket.id].level += 1;
     // })
-    socket.on("fire", function () {
-        temp_data[socket.id].isFiring = true;
-        temp_data[socket.id].angle = players[socket.id].angle;
-        players[socket.id].freezed = true;
-    })
+
 
 });
 
@@ -124,14 +154,12 @@ function resend() {
                 players[player].tip.x += players[player].level * 10 * Math.cos(RAD * -(temp_data[player].angle - 90));
                 players[player].tip.y -= players[player].level * 10 * Math.sin(RAD * -(temp_data[player].angle - 90));
 
-                var x = players[player].x + players[player].tip.x;
-                var y = players[player].y + players[player].tip.y;
-                var r = (players[player].level + 2) * 7;
-
                 for (var enemy in players) {
                     if (enemy != player) {
-                        if (dist({x:x,y:y},players[enemy]) < r + 64 ){
-                            players[enemy].dead = true;
+                        if (dist({ x: players[player].x + players[player].tip.x, y: players[player].y + players[player].tip.y }, players[enemy]) < ((players[player].level + 2) * 7) + 64) {
+                            delete players[enemy];
+                            delete temp_data[enemy];
+                            io.to(enemy).emit("death")
                         }
                     }
                 }
@@ -202,7 +230,7 @@ function resend() {
         viewport.x = players[player].x;
         viewport.y = players[player].y;
         viewport.w = temp_data[player].clientWidth;
-        viewport.h = temp_data[player].clientHeight - 340;
+        viewport.h = temp_data[player].clientHeight;
         requiredPelletData = qTree.query(viewport);
         checkCollision(players[player])
         removePellets();

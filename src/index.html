@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Poly Spear</title>
+    <title>PolyS</title>
     <link rel='stylesheet' href='style.css' />
     <script src='Mahou.js'></script>
     <script src='SAT.js'></script>
@@ -11,8 +11,15 @@
 </head>
 
 <body>
-    <canvas id='game_canvas'></canvas>
+    <canvas id='game_canvas' style="z-index: -1;" ></canvas>
     <div style="position:static;" id="zone_joystick"></div>
+    <div style="display:none;position:absolute;border:40px solid #34495e;border-radius: 40px;bottom: 10%;right: 15%;" id="nitro" >
+        <div style="position:absolute;width:0;border:35px solid #3498db;border-radius: 35px;margin-left: -35px;margin-top: -35px;" ></div>
+    </div>
+    <div style="display:none;position:absolute;border:40px solid #34495e;border-radius: 40px;bottom: 10%;right: 5%;"  id="fire" >
+        <div style="position:absolute;width:0;border:35px solid #e74c3c;border-radius: 35px;margin-left: -35px;margin-top: -35px;"></div>
+    </div>
+    
     <script src='main.js'></script>
 </body>
 
