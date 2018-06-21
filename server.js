@@ -140,7 +140,7 @@ io.on('connection', function (socket) {
 
 });
 
-http.listen(8080);
+app.listen( process.env.PORT || 8080)
 
 
 

@@ -75,8 +75,6 @@ function setup() {
     frameRate = 100;
 }
 
-
-
 function create() {
 
 
@@ -86,6 +84,10 @@ function create() {
 
 
         document.addEventListener("mousedown", function () {
+            // if (!this.webkitIsFullScreen) {
+            //     _canvas.webkitRequestFullScreen();
+            //     _canvas.height = window.screen.height;
+            // }
             // if (speedBar.mouseIsOver || rangeBar.mouseIsOver || movementSpeedBar.mouseIsOver) return;
             hasThrust = false;
             socket.emit("fire");
@@ -107,6 +109,7 @@ function create() {
                 nitro = false;
             }
         })
+
     } else {
 
         document.getElementById("nitro").style.display = 'block';
@@ -129,9 +132,16 @@ function create() {
         levelTextWidth = 25;
         levelBarHeight = 30;
 
-
+        // document.addEventListener("mousedown", function () {
+        //     if (!this.webkitIsFullScreen) {
+        //         document.getElementById("screen").webkitRequestFullScreen();
+        //         _canvas.width = window.screen.width * window.devicePixelRatio;
+        //         _canvas.height = window.screen.height * window.devicePixelRatio;
+        //     }
+        // })
 
         document.getElementById("nitro").addEventListener("touchstart", function () {
+
             // if (speedBar.mouseIsOver || rangeBar.mouseIsOver || movementSpeedBar.mouseIsOver) return;
             nitro = true;
         });
