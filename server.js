@@ -5,8 +5,9 @@ var io = require('socket.io')(http);
 let Mahou = require("./lib/quadtree.js")
 // let SAT = require('./lib/SAT.js')
 
-
 let boundary = new Mahou.Rectangle(1500, 1500, 1500, 1500);
+
+
 
 let qTree = new Mahou.QuadTree(boundary, 5);
 
@@ -25,11 +26,15 @@ let speed = 10;
 // let P = SAT.Polygon;
 // let C = SAT.Circle;
 
-
-let temp_level = 1;
+let ran_names = ["Garry", "Emmett", "Hank", "Vincenzo", "Cornell", "Darryl", "Arturo", "Jewell", "Kent", "Luigi", "Haywood", "King", "Lonnie", "Renaldo", "Johnny", "Tad", "Abel", "Matt", "Shirley", "Valentin", "Nelson", "Vicente", "Keneth", "Darell", "Anton", "Theron", "Dana", "Israel", "Newton", "Willis", "Scot", "Erasmo", "Barney", "Charley", "Louie", "Sylvester", "Johnathan", "Laverne", "Zachery", "Arlen", "Sydney", "Luke", "Keith", "Jc", "Harland", "Monty", "Chas", "Tanner", "Kim", "Dwayne", "Veronica", "Marna", "Tina", "Denisha", "Mechelle", "Fatimah", "Marva", "Valrie", "Danelle", "Fernande"]
+let used_names = [];
 let plyr = {};
 
 const RAD = (Math.PI / 180);
+
+
+
+let bots = [{ id: "001", username: "Garry" }, { id: "002", username: "Kill me" }, { id: "003", username: "World Champion" }, { id: "004", username: "Crazy Frog" }, { id: "005", username: "Sakamoto" }, { id: "006", username: "Chess player" }];
 
 for (var i = 0; i < 400; i++) {
     qTree.insert({ x: Math.floor(Math.random() * 3000), y: Math.floor(Math.random() * 3000), radius: 10 });
@@ -40,6 +45,39 @@ app.use(express.static("src"))
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/src/index.html');
 });
+
+for (let bot of bots) {
+    insertBot(bot);
+}
+
+
+function insertBot(bot) {
+    // used_names.push(ran_names.splice(ran_names.indexOf(rand_name),1)[0]);
+    players[bot.id] = {
+        id: bot.id,
+        x: random(3000),
+        y: random(3000),
+        angle: 0,
+        tip: { x: 0, y: 0 },
+        experience: 0,
+        level: 1,
+        freezed: false,
+        nitro: false,
+        alive: true,
+        username: bot.username,
+        score: 0,
+        bot: true
+    }
+    temp_data[bot.id] = {
+        clientWidth: 1024,
+        clientHeight: 1024,
+        angle: random(90, 180),
+        isFiring: false,
+        back: false,
+        level: 1,
+        botNearest: {}
+    }
+}
 
 
 
@@ -73,8 +111,8 @@ io.on('connection', function (socket) {
     socket.on("start_game", function (data) {
 
         players[socket.id] = {
-            x: 0,
-            y: 0,
+            x: random(3000),
+            y: random(3000),
             angle: 0,
             tip: { x: 0, y: 0 },
             experience: 0,
@@ -91,7 +129,7 @@ io.on('connection', function (socket) {
             angle: 0,
             isFiring: false,
             back: false,
-            level:1
+            level: 1
 
         }
 
@@ -161,11 +199,15 @@ function resend() {
                         if (dist({ x: players[player].x + players[player].tip.x, y: players[player].y + players[player].tip.y }, players[enemy]) < ((players[player].level + 2) * 7) + 64) {
                             players[enemy].alive = false;
                             players[player].experience += Math.floor(players[enemy].experience / 2);
-                            while(players[player].experience >= points_sc[players[player].level] ) {
+                            while (players[player].experience >= points_sc[players[player].level]) {
                                 players[player].level++;
                             }
                             players[player].score += Math.floor(players[enemy].score / 2);
-                            io.to(enemy).emit("death");
+                            if (players[enemy].bot) {
+                                insertBot(players[enemy]);
+                            } else {
+                                io.to(enemy).emit("death");
+                            }
                         }
                     }
                 }
@@ -197,6 +239,7 @@ function resend() {
                 if (dist(players[player].tip, { x: 0, y: 0 }) > 1) {
                     players[player].tip.x -= temp_data[player].level * 10 * Math.cos(RAD * -(temp_data[player].angle - 90));
                     players[player].tip.y += temp_data[player].level * 10 * Math.sin(RAD * -(temp_data[player].angle - 90));
+
                 } else {
                     temp_data[player].isFiring = false;
                     temp_data[player].level = players[player].level;
@@ -211,29 +254,81 @@ function resend() {
                 players[player].experience -= 0.1;
                 players[player].score -= 10;
                 speed = 10;
-                if(players[player].experience < points_sc[players[player].level - 1] && players[player].level != 1 ){
+                if (players[player].experience < points_sc[players[player].level - 1] && players[player].level != 1) {
                     players[player].level--;
                 }
             } else {
                 speed = 5;
             }
 
+
+
             players[player].x += speed * Math.cos(RAD * -(players[player].angle - 90));
             players[player].y -= speed * Math.sin(RAD * -(players[player].angle - 90));
 
+            if (players[player].bot) {
+                for (var enemy in players) {
+                    if (enemy != player && players[enemy].alive) {
+                        if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < 400) {
+                            if (temp_data[enemy].botNearest == players[player]) {
+                                players[player].angle = (Math.atan2((players[player].y - players[enemy].y), (players[player].x - players[enemy].x)) * 180 / Math.PI - 90);
+                                if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < 300) {
+                                    if (!players[player].freezed) {
+                                        temp_data[player].isFiring = true;
+                                        temp_data[player].angle = players[player].angle;
+                                        players[player].freezed = true;
+                                    }
+                                }
+                            } else {
+                                temp_data[enemy].botNearest = players[player];
+                                if (dist(players[enemy], temp_data[enemy].botNearest) > dist(players[enemy], players[player])) {
 
+                                    players[player].angle = (Math.atan2((players[player].y - players[enemy].y), (players[player].x - players[enemy].x)) * 180 / Math.PI - 90);
+                                    if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < 300) {
+                                        if (!players[player].freezed) {
+                                            temp_data[player].isFiring = true;
+                                            temp_data[player].angle = players[player].angle;
+                                            players[player].freezed = true;
+                                        }
+                                    }
+                                } else {
+                                    temp_data[enemy].botNearest.angle = (Math.atan2((temp_data[enemy].botNearest.y - players[enemy].y), (temp_data[enemy].botNearest.x - players[enemy].x)) * 180 / Math.PI - 90);
+                                    if (dist({ x: temp_data[enemy].botNearest.x, y: temp_data[enemy].botNearest.y }, players[enemy]) < 300) {
+                                        if (!temp_data[enemy].botNearest.freezed) {
+                                            temp_data[temp_data[enemy].botNearest.id].isFiring = true;
+                                            temp_data[temp_data[enemy].botNearest.id].angle = players[player].angle;
+                                            temp_data[enemy].botNearest.freezed = true;
+                                        }
+                                    }
+                                }
+
+
+                            }
+                        }
+                    }
+                }
+            }
 
             if (players[player].x >= world_width - 32 + 3) {
                 players[player].x = world_width - 32 + 3;
+                if (players[player].bot)
+                players[player].angle = random(0, 360)
             } else if (players[player].x <= 32 - 3) {
                 players[player].x = 32 - 3;
+                if (players[player].bot)
+                players[player].angle = random(0, 360)
             }
 
             if (players[player].y > world_height - 32 + 3) {
                 players[player].y = world_height - 32 + 3;
+                if (players[player].bot)
+                players[player].angle = random(0, 360)
             } else if (players[player].y <= 32 - 3) {
                 players[player].y = 32 - 3;
+                if (players[player].bot)
+                players[player].angle = random(0, 360)
             }
+            
         }
 
         viewport.x = players[player].x;
@@ -241,8 +336,8 @@ function resend() {
         viewport.w = temp_data[player].clientWidth;
         viewport.h = temp_data[player].clientHeight;
         requiredPelletData = qTree.query(viewport);
-        if(!players[player].isFiring)
-        checkCollision(player)
+        if (!players[player].isFiring)
+            checkCollision(player)
         removePellets();
 
 
