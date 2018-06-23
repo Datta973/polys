@@ -149,22 +149,22 @@ http.listen(process.env.PORT || 8080)
 
 function resend() {
     for (var player in players) {
-        if (temp_data[player].isFiring) { temp_data[player]
+        if (temp_data[player].isFiring) {
             // console.log(dist(players[player].tip, { x: players[player].level * 70 * Math.cos(RAD * -(temp_data[player].angle - 90)), y: -(players[player].level * 70 * Math.sin(RAD * -(temp_data[player].angle - 90))) }));
             if (dist(players[player].tip, { x: temp_data[player].level * 70 * Math.cos(RAD * -(temp_data[player].angle - 90)), y: -(temp_data[player].level * 70 * Math.sin(RAD * -(temp_data[player].angle - 90))) }) > 10 && temp_data[player].back != true) {
 
-                players[player].tip.x += players[player].level * 10 * Math.cos(RAD * -(temp_data[player].angle - 90));
-                players[player].tip.y -= players[player].level * 10 * Math.sin(RAD * -(temp_data[player].angle - 90));
+                players[player].tip.x += temp_data[player].level * 10 * Math.cos(RAD * -(temp_data[player].angle - 90));
+                players[player].tip.y -= temp_data[player].level * 10 * Math.sin(RAD * -(temp_data[player].angle - 90));
 
                 for (var enemy in players) {
-                    if (enemy != player) {
+                    if (enemy != player && players[enemy].alive) {
                         if (dist({ x: players[player].x + players[player].tip.x, y: players[player].y + players[player].tip.y }, players[enemy]) < ((players[player].level + 2) * 7) + 64) {
                             players[enemy].alive = false;
-                            players[player].experience += players[enemy].experience / 2;
+                            players[player].experience += Math.floor(players[enemy].experience / 2);
                             while(players[player].experience >= points_sc[players[player].level] ) {
                                 players[player].level++;
                             }
-                            players[player].score += players[enemy].score / 2;
+                            players[player].score += Math.floor(players[enemy].score / 2);
                             io.to(enemy).emit("death");
                         }
                     }
