@@ -15,12 +15,10 @@ let requiredPelletData = [];
 let collidedPellets = [];
 let temp = {};
 let viewport = new Mahou.Rectangle(0, 0, 0, 0);
-let points_sc = [0, 2, 4, 6, 8, 10, 12, 13, 14, 15, 16];
+let points_sc = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55];
 let temp_data = {};
 let world_width = 3000, world_height = 3000;
 let speed = 10;
-let polys = {};
-let circles = {};
 
 // let V = SAT.Vector;
 // let P = SAT.Polygon;
@@ -79,8 +77,9 @@ io.on('connection', function (socket) {
             level: 1,
             freezed: false,
             nitro: false,
-            dead: false,
-            username:data.username
+            alive: true,
+            username: data.username,
+            score: 0
         }
         temp_data[socket.id] = {
             clientWidth: 1024,
@@ -106,15 +105,13 @@ io.on('connection', function (socket) {
     })
 
     socket.on('update_data', function (data) {
-        if(!players[socket.id])return;
         for (var prop in data) {
             players[socket.id][prop] = data[prop];
         }
     })
 
     socket.on("fire", function () {
-        if(!players[socket.id])return;
-        if(players[socket.id].freezed)return;
+        if (players[socket.id].freezed) return;
         temp_data[socket.id].isFiring = true;
         temp_data[socket.id].angle = players[socket.id].angle;
         players[socket.id].freezed = true;
@@ -140,7 +137,7 @@ io.on('connection', function (socket) {
 
 });
 
-http.listen( process.env.PORT || 8080)
+http.listen(process.env.PORT || 8080)
 
 
 
@@ -157,9 +154,15 @@ function resend() {
                 for (var enemy in players) {
                     if (enemy != player) {
                         if (dist({ x: players[player].x + players[player].tip.x, y: players[player].y + players[player].tip.y }, players[enemy]) < ((players[player].level + 2) * 7) + 64) {
-                            delete players[enemy];
-                            delete temp_data[enemy];
-                            io.to(enemy).emit("death")
+                            players[enemy].alive = false;
+                            players[player].experience += players[enemy].experience / 2;
+
+                            while (players[player].experience >= points_sc[players[player].level]) {
+                                players[player].level++;
+                            }
+
+                            players[player].score += players[enemy].score / 2;
+                            io.to(enemy).emit("death");
                         }
                     }
                 }
@@ -201,7 +204,11 @@ function resend() {
         } else {
             if (players[player].nitro && players[player].experience > 0) {
                 players[player].experience -= 0.1;
+                players[player].score -= 10;
                 speed = 10;
+                if(players[player].experience < points_sc[players[player].level - 1] && players[player].level != 1 ){
+                    players[player].level--;
+                }
             } else {
                 speed = 5;
             }
@@ -264,8 +271,9 @@ function checkCollision(plyr) {
             qTree.remove(pellet);
             qTree.insert({ x: Math.floor(Math.random() * 3000), y: Math.floor(Math.random() * 3000), radius: 10 });
             plyr.experience += 0.25;
+            plyr.score += 25;
             if (plyr.experience >= points_sc[plyr.level]) {
-                plyr.experience -= points_sc[plyr.level];
+                // plyr.experience -= points_sc[plyr.level];
                 plyr.level++;
             }
         }
