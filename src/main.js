@@ -54,8 +54,8 @@ const world_height = 3000;
 let connectedToServer = false;
 let mobileDevice = false;
 
-let V = SAT.Vector;
-let P = SAT.Polygon;
+// let V = SAT.Vector;
+// let P = SAT.Polygon;
 let polys = {};
 let manager;
 let username = " ";
