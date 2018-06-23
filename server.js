@@ -25,6 +25,9 @@ let speed = 10;
 // let C = SAT.Circle;
 
 
+let temp_level = 1;
+let plyr = {};
+
 const RAD = (Math.PI / 180);
 
 for (var i = 0; i < 400; i++) {
@@ -86,7 +89,9 @@ io.on('connection', function (socket) {
             clientHeight: 1024,
             angle: 0,
             isFiring: false,
-            back: false
+            back: false,
+            level:1
+
         }
 
         temp_data[socket.id].clientWidth = data.clientWidth;
@@ -143,10 +148,9 @@ http.listen(process.env.PORT || 8080)
 
 function resend() {
     for (var player in players) {
-
-        if (temp_data[player].isFiring) {
+        if (temp_data[player].isFiring) { temp_data[player]
             // console.log(dist(players[player].tip, { x: players[player].level * 70 * Math.cos(RAD * -(temp_data[player].angle - 90)), y: -(players[player].level * 70 * Math.sin(RAD * -(temp_data[player].angle - 90))) }));
-            if (dist(players[player].tip, { x: players[player].level * 70 * Math.cos(RAD * -(temp_data[player].angle - 90)), y: -(players[player].level * 70 * Math.sin(RAD * -(temp_data[player].angle - 90))) }) > 1 && temp_data[player].back != true) {
+            if (dist(players[player].tip, { x: temp_data[player].level * 70 * Math.cos(RAD * -(temp_data[player].angle - 90)), y: -(temp_data[player].level * 70 * Math.sin(RAD * -(temp_data[player].angle - 90))) }) > 10 && temp_data[player].back != true) {
 
                 players[player].tip.x += players[player].level * 10 * Math.cos(RAD * -(temp_data[player].angle - 90));
                 players[player].tip.y -= players[player].level * 10 * Math.sin(RAD * -(temp_data[player].angle - 90));
@@ -156,11 +160,9 @@ function resend() {
                         if (dist({ x: players[player].x + players[player].tip.x, y: players[player].y + players[player].tip.y }, players[enemy]) < ((players[player].level + 2) * 7) + 64) {
                             players[enemy].alive = false;
                             players[player].experience += players[enemy].experience / 2;
-
-                            while (players[player].experience >= points_sc[players[player].level]) {
+                            while(players[player].experience >= points_sc[players[player].level] ) {
                                 players[player].level++;
                             }
-
                             players[player].score += players[enemy].score / 2;
                             io.to(enemy).emit("death");
                         }
@@ -189,12 +191,14 @@ function resend() {
 
 
             } else {
+
                 temp_data[player].back = true;
                 if (dist(players[player].tip, { x: 0, y: 0 }) > 1) {
-                    players[player].tip.x -= players[player].level * 10 * Math.cos(RAD * -(temp_data[player].angle - 90));
-                    players[player].tip.y += players[player].level * 10 * Math.sin(RAD * -(temp_data[player].angle - 90));
+                    players[player].tip.x -= temp_data[player].level * 10 * Math.cos(RAD * -(temp_data[player].angle - 90));
+                    players[player].tip.y += temp_data[player].level * 10 * Math.sin(RAD * -(temp_data[player].angle - 90));
                 } else {
                     temp_data[player].isFiring = false;
+                    temp_data[player].level = players[player].level;
                     players[player].tip.x = 0;
                     players[player].tip.y = 0;
                     players[player].freezed = false;
@@ -212,9 +216,6 @@ function resend() {
             } else {
                 speed = 5;
             }
-
-            // circles[player].pos.x = players[player].x;
-            // circles[player].pos.y = players[player].y;
 
             players[player].x += speed * Math.cos(RAD * -(players[player].angle - 90));
             players[player].y -= speed * Math.sin(RAD * -(players[player].angle - 90));
@@ -239,11 +240,10 @@ function resend() {
         viewport.w = temp_data[player].clientWidth;
         viewport.h = temp_data[player].clientHeight;
         requiredPelletData = qTree.query(viewport);
-        checkCollision(players[player])
+        if(!players[player].isFiring)
+        checkCollision(player)
         removePellets();
 
-        // players[player].polys = polys;
-        // players[player].circles = circles;
 
         io.to(player).emit('update_data', { player_list: players, food_data: requiredPelletData })
     }
@@ -264,7 +264,8 @@ function random() {
     }
 }
 
-function checkCollision(plyr) {
+function checkCollision(id) {
+    plyr = players[id];
     for (let pellet of requiredPelletData) {
         if (dist(plyr, pellet) < 32 + pellet.radius) {
             collidedPellets.push(pellet);
@@ -275,6 +276,7 @@ function checkCollision(plyr) {
             if (plyr.experience >= points_sc[plyr.level]) {
                 // plyr.experience -= points_sc[plyr.level];
                 plyr.level++;
+                temp_data[id].level = plyr.level;
             }
         }
     }
@@ -304,3 +306,4 @@ function d2r(d) {
     var r = d * (Math.PI / 180);
     return r;
 }
+
