@@ -20,6 +20,17 @@ html, body {
 #scoreboard{
       font-family: cursive;
       user-select: none;
+      word-wrap: none;
+      
+}
+
+.displayname{
+      float: left;
+      display: block;
+      white-space: nowrap;
+      width: 70%;
+      overflow: hidden;
+      text-overflow: ellipsis;
 }
 
 #name{

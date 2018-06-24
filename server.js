@@ -114,7 +114,7 @@ io.on('connection', function (socket) {
     // circles[socket.id] = new C(new V(), 32);
 
     socket.on("start_game", function (data) {
-
+        
         players[socket.id] = {
             x: random(3000),
             y: random(3000),

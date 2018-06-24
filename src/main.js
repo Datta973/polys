@@ -412,7 +412,7 @@ function create() {
             if (!others[id]) {
                 if (!data["player_list"][id].alive) continue;
                 others[id] = new Player(data["player_list"][id]);
-                byId("scoreboard").append("<li data-score=0 >" + data["player_list"][id].username + " - " + "<span id='" + id + "' ></span></li>")
+                byId("scoreboard").append("<li data-score=0 ><div class='displayname'  >" + data["player_list"][id].username + "</div>" +" - "+"<font id='" + id + "' ></font></li>")
             }
             else {
                 others[id].target.x = data["player_list"][id].x;
