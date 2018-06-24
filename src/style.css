@@ -19,6 +19,7 @@ html, body {
 
 #scoreboard{
       font-family: cursive;
+      user-select: none;
 }
 
 #name{

@@ -34,7 +34,7 @@ const RAD = (Math.PI / 180);
 
 
 
-let bots = [{ id: "001", username: "Garry" }, { id: "002", username: "Kill me" }, { id: "003", username: "World Champion" }, { id: "004", username: "Crazy Frog" }, { id: "005", username: "Sakamoto" }, { id: "006", username: "Chess player" }];
+let bots = [{ id: "001", username: "Saturn" }, { id: "002", username: "Smashhh" }, { id: "003", username: "Sasuke" }, { id: "004", username: "Fun hack?" }];
 
 for (var i = 0; i < 400; i++) {
     qTree.insert({ x: Math.floor(Math.random() * 3000), y: Math.floor(Math.random() * 3000), radius: 10 });
@@ -75,8 +75,13 @@ function insertBot(bot) {
         isFiring: false,
         back: false,
         level: 1,
-        botNearest: {}
+        botNearest: {},
+        invincible: true,
+        cool_counter: 0
     }
+    setTimeout(function () {
+        if (players[bot.id]) players[bot.id].invincible = false;
+    }, 4400)
 }
 
 
@@ -121,7 +126,8 @@ io.on('connection', function (socket) {
             nitro: false,
             alive: true,
             username: data.username,
-            score: 0
+            score: 0,
+            invincible: true
         }
         temp_data[socket.id] = {
             clientWidth: 1024,
@@ -129,13 +135,16 @@ io.on('connection', function (socket) {
             angle: 0,
             isFiring: false,
             back: false,
-            level: 1
-
+            level: 1,
+            cool_counter: 0
         }
 
         temp_data[socket.id].clientWidth = data.clientWidth;
         temp_data[socket.id].clientHeight = data.clientHeight;
-
+        //console.log(socket.id)
+        setTimeout(function () {
+            if (players[socket.id]) players[socket.id].invincible = false;
+        }, 4400)
 
 
     })
@@ -155,10 +164,11 @@ io.on('connection', function (socket) {
     })
 
     socket.on("fire", function () {
-        if (players[socket.id].freezed) return;
+        if (players[socket.id].freezed || temp_data[socket.id].cool_counter != 0) return;
         temp_data[socket.id].isFiring = true;
         temp_data[socket.id].angle = players[socket.id].angle;
         players[socket.id].freezed = true;
+        temp_data[socket.id].cool_counter = 5 * temp_data[socket.id].level;
     })
 
 
@@ -187,16 +197,17 @@ http.listen(process.env.PORT || 8080)
 
 function resend() {
     for (var player in players) {
+        temp_data[player].cool_counter -= temp_data[player].cool_counter <= 0 ? 0 : 1;
         if (temp_data[player].isFiring) {
             // console.log(dist(players[player].tip, { x: players[player].level * 70 * Math.cos(RAD * -(temp_data[player].angle - 90)), y: -(players[player].level * 70 * Math.sin(RAD * -(temp_data[player].angle - 90))) }));
-            if (dist(players[player].tip, { x: temp_data[player].level * 70 * Math.cos(RAD * -(temp_data[player].angle - 90)), y: -(temp_data[player].level * 70 * Math.sin(RAD * -(temp_data[player].angle - 90))) }) > 10 && temp_data[player].back != true) {
+            if (dist(players[player].tip, { x: temp_data[player].level * 40 * Math.cos(RAD * -(temp_data[player].angle - 90)), y: -(temp_data[player].level * 40 * Math.sin(RAD * -(temp_data[player].angle - 90))) }) > 10 && temp_data[player].back != true) {
 
                 players[player].tip.x += temp_data[player].level * 10 * Math.cos(RAD * -(temp_data[player].angle - 90));
                 players[player].tip.y -= temp_data[player].level * 10 * Math.sin(RAD * -(temp_data[player].angle - 90));
 
                 for (var enemy in players) {
                     if (enemy != player && players[enemy].alive) {
-                        if (dist({ x: players[player].x + players[player].tip.x, y: players[player].y + players[player].tip.y }, players[enemy]) < ((players[player].level + 2) * 7) + 64) {
+                        if (dist({ x: players[player].x + players[player].tip.x, y: players[player].y + players[player].tip.y }, players[enemy]) < ((players[player].level + 2) * 4) + 64 && !players[enemy].invincible) {
                             players[enemy].alive = false;
                             players[player].experience += Math.floor(players[enemy].experience / 2);
                             while (players[player].experience >= points_sc[players[player].level]) {
@@ -241,12 +252,15 @@ function resend() {
                     players[player].tip.y += temp_data[player].level * 10 * Math.sin(RAD * -(temp_data[player].angle - 90));
 
                 } else {
+
                     temp_data[player].isFiring = false;
                     temp_data[player].level = players[player].level;
                     players[player].tip.x = 0;
                     players[player].tip.y = 0;
                     players[player].freezed = false;
                     temp_data[player].back = false;
+
+
                 }
             }
         } else {
@@ -270,39 +284,14 @@ function resend() {
                 for (var enemy in players) {
                     if (enemy != player && players[enemy].alive) {
                         if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < 400) {
-                            if (temp_data[enemy].botNearest == players[player]) {
-                                players[player].angle = (Math.atan2((players[player].y - players[enemy].y), (players[player].x - players[enemy].x)) * 180 / Math.PI - 90);
-                                if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < 300) {
-                                    if (!players[player].freezed) {
-                                        temp_data[player].isFiring = true;
-                                        temp_data[player].angle = players[player].angle;
-                                        players[player].freezed = true;
-                                    }
+                            players[player].angle = (Math.atan2((players[player].y - players[enemy].y), (players[player].x - players[enemy].x)) * 180 / Math.PI - 90);
+                            if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < players[player].level * 70) {
+                                if (!players[player].freezed && temp_data[player].cool_counter == 0) {
+                                    temp_data[player].isFiring = true;
+                                    temp_data[player].angle = players[player].angle;
+                                    players[player].freezed = true;
+                                    temp_data[player].cool_counter = 5 * temp_data[player].level;
                                 }
-                            } else {
-                                temp_data[enemy].botNearest = players[player];
-                                if (dist(players[enemy], temp_data[enemy].botNearest) > dist(players[enemy], players[player])) {
-
-                                    players[player].angle = (Math.atan2((players[player].y - players[enemy].y), (players[player].x - players[enemy].x)) * 180 / Math.PI - 90);
-                                    if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < 300) {
-                                        if (!players[player].freezed) {
-                                            temp_data[player].isFiring = true;
-                                            temp_data[player].angle = players[player].angle;
-                                            players[player].freezed = true;
-                                        }
-                                    }
-                                } else {
-                                    temp_data[enemy].botNearest.angle = (Math.atan2((temp_data[enemy].botNearest.y - players[enemy].y), (temp_data[enemy].botNearest.x - players[enemy].x)) * 180 / Math.PI - 90);
-                                    if (dist({ x: temp_data[enemy].botNearest.x, y: temp_data[enemy].botNearest.y }, players[enemy]) < 300) {
-                                        if (!temp_data[enemy].botNearest.freezed) {
-                                            temp_data[temp_data[enemy].botNearest.id].isFiring = true;
-                                            temp_data[temp_data[enemy].botNearest.id].angle = players[player].angle;
-                                            temp_data[enemy].botNearest.freezed = true;
-                                        }
-                                    }
-                                }
-
-
                             }
                         }
                     }
@@ -312,23 +301,23 @@ function resend() {
             if (players[player].x >= world_width - 32 + 3) {
                 players[player].x = world_width - 32 + 3;
                 if (players[player].bot)
-                players[player].angle = random(0, 360)
+                    players[player].angle = random(0, 360)
             } else if (players[player].x <= 32 - 3) {
                 players[player].x = 32 - 3;
                 if (players[player].bot)
-                players[player].angle = random(0, 360)
+                    players[player].angle = random(0, 360)
             }
 
             if (players[player].y > world_height - 32 + 3) {
                 players[player].y = world_height - 32 + 3;
                 if (players[player].bot)
-                players[player].angle = random(0, 360)
+                    players[player].angle = random(0, 360)
             } else if (players[player].y <= 32 - 3) {
                 players[player].y = 32 - 3;
                 if (players[player].bot)
-                players[player].angle = random(0, 360)
+                    players[player].angle = random(0, 360)
             }
-            
+
         }
 
         viewport.x = players[player].x;

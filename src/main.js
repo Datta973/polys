@@ -436,10 +436,8 @@ function create() {
             levelText.string = "level " + data["player_list"][socket.id].level;
             sides = data["player_list"][socket.id].level + 2;
             tip.sides(sides)
-            tip.radius(sides * 7)
+            tip.radius(sides * 4)
             tip.origin(- tip.inRadius + cap.width / 2 - xpBar.width / 2 - 6, 15);
-            _range = sides * 30;
-            _speed = sides * 30;
         }
 
         $("#scoreboard").children().sort(function (a, b) {
@@ -481,6 +479,9 @@ function update() {
 
     tip.x = others[socket.id].tip.x;
     tip.y = others[socket.id].tip.y;
+
+    cap.opacity(1,others[socket.id].opa)
+    xpBar.strokeColor = others[socket.id].color;
 
     __Mahou__.save();
     __Mahou__.translate(player.x - others[socket.id].x, player.y - others[socket.id].y);
@@ -626,7 +627,19 @@ function Player(data) {
     this.xpBar = new circularLevelBar(data.x, data.y, 32);
     this.level = 1;
     this.list = {};
-
+    this.opa = 1;
+    this.opaDir = -1;
+    this.color = 'green';
+    var interval = setInterval(function(obj){
+        return function(){obj.opa < 0 ? obj.opaDir = 1 : obj.opa >=1 ? obj.opaDir = -1 : 0; obj.opa += obj.opaDir*0.1; obj.color = "rgba(61,59,59,"+obj.opa+")";}
+    }(this),50)
+    setTimeout(function(obj){
+        return function(){
+        clearInterval(interval);
+        obj.color = '#3d3b3b';
+        obj.opa = 1;
+        }
+    }(this),4400)
     this.modify = function (id) {
 
         sides = this.level + 2;
@@ -673,9 +686,9 @@ function Player(data) {
 
     }
     this.draw = function () {
-
         this.xpBar.x = this.x;
         this.xpBar.y = this.y;
+        this.xpBar.strokeColor = this.color;
         this.xpBar.executeBluePrint();
 
         __Mahou__.beginPath();
@@ -684,7 +697,9 @@ function Player(data) {
         __Mahou__.fillStyle = '#e74c3c';
         __Mahou__.fill();
         __Mahou__.lineWidth = 3;
-        __Mahou__.strokeStyle = '#3d3b3b';
+        __Mahou__.strokeStyle = this.color //'#3d3b3b';
+        
+        //this.color = 'green'
         __Mahou__.stroke();
         __Mahou__.fillStyle = '#fff';
         __Mahou__.strokeStyle = '#34495e';
@@ -725,11 +740,11 @@ function Player(data) {
         __Mahou__.save();
         __Mahou__.translate(this.x + this.tip.x, this.y + this.tip.y);
         __Mahou__.rotate((-Math.PI / 2) + ((this.rotation.current - 180 - 90) - 90) * Math.PI / 180);
-        __Mahou__.translate(sides * 7 * Math.cos(Math.PI / sides) + 34, 0);
+        __Mahou__.translate(sides * 4 * Math.cos(Math.PI / sides) + 34, 0);
         __Mahou__.beginPath();
-        __Mahou__.moveTo(sides * 7, 0);
+        __Mahou__.moveTo(sides * 4, 0);
         for (var i = 1; i < sides; i++) {
-            __Mahou__.lineTo(sides * 7 * Math.cos(i * (Math.PI * 2) / sides), sides * 7 * Math.sin(i * (Math.PI * 2) / sides));
+            __Mahou__.lineTo(sides * 4 * Math.cos(i * (Math.PI * 2) / sides), sides * 4 * Math.sin(i * (Math.PI * 2) / sides));
         }
         __Mahou__.closePath();
         __Mahou__.fill();

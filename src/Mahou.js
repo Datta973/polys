@@ -573,6 +573,7 @@ class circularLevelBar extends MahouObject {
     constructor(x, y, radius) {
         super(x, y, 2 * radius, 2 * radius)
         this.level = 0;
+        this.strokeColor = "#3d3b3b";
         this._stroke = function () { }
         this.executeBluePrint = function () {
 
@@ -580,7 +581,7 @@ class circularLevelBar extends MahouObject {
             __Mahou__.arc(this.x, this.y, radius, 0, 2 * Math.PI);
             __Mahou__.closePath();
             __Mahou__.lineWidth = 2.5;
-            __Mahou__.strokeStyle = "#3d3b3b";
+            __Mahou__.strokeStyle = this.strokeColor;
             __Mahou__.stroke();
             __Mahou__.beginPath();
             __Mahou__.arc(this.x, this.y, radius - 1, 0, 2 * Math.PI);
