@@ -66,7 +66,8 @@ function insertBot(bot) {
         alive: true,
         username: bot.username,
         score: 0,
-        bot: true
+        bot: true,
+        invincible: true,
     }
     temp_data[bot.id] = {
         clientWidth: 1024,
@@ -76,7 +77,6 @@ function insertBot(bot) {
         back: false,
         level: 1,
         botNearest: {},
-        invincible: true,
         cool_counter: 0
     }
     setTimeout(function () {
@@ -125,7 +125,7 @@ io.on('connection', function (socket) {
             freezed: false,
             nitro: false,
             alive: true,
-            username: data.username.replace(/<[^>]*>/,""),
+            username: data.username.replace(/<[^>]*>/, ""),
             score: 0,
             invincible: true
         }
@@ -207,7 +207,8 @@ function resend() {
 
                 for (var enemy in players) {
                     if (enemy != player && players[enemy].alive) {
-                        if (dist({ x: players[player].x + players[player].tip.x, y: players[player].y + players[player].tip.y }, players[enemy]) < ((players[player].level + 2) * 4) + 64 && !players[enemy].invincible) {
+                        if (dist({ x: players[player].x + players[player].tip.x, y: players[player].y + players[player].tip.y }, players[enemy]) < ((players[player].level + 2) * 4) + 64 && !players[enemy].invincible && !players[player].invincible) {
+                            
                             players[enemy].alive = false;
                             players[player].experience += Math.floor(players[enemy].experience / 2);
                             while (players[player].experience >= points_sc[players[player].level]) {
@@ -219,6 +220,7 @@ function resend() {
                             } else {
                                 io.to(enemy).emit("death");
                             }
+
                         }
                     }
                 }
@@ -283,7 +285,7 @@ function resend() {
             if (players[player].bot) {
                 for (var enemy in players) {
                     if (enemy != player && players[enemy].alive) {
-                        if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < 400) {
+                        if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < 400 && !players[enemy].invincible) {
                             players[player].angle = (Math.atan2((players[player].y - players[enemy].y), (players[player].x - players[enemy].x)) * 180 / Math.PI - 90);
                             if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < players[player].level * 70) {
                                 if (!players[player].freezed && temp_data[player].cool_counter == 0) {

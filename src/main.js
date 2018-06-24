@@ -397,10 +397,12 @@ function create() {
         connectedToServer = true;
 
         food = data["food_data"];
+
         for (var id in others) {
 
             if (data["player_list"][id] == undefined || !data["player_list"][id].alive) {
                 delete others[id];
+                console.log(id)
                 byId(id).parentElement.remove();
             }
         }
@@ -421,10 +423,10 @@ function create() {
                 others[id].target.tip = data["player_list"][id].tip;
                 others[id].freezed = data["player_list"][id].freezed;
                 others[id].username = data["player_list"][id].username;
-
+                others[id].invincible = data["player_list"][id].invincible;
                 others[id].score = data["player_list"][id].score;
                 byId(id).parentElement.setAttribute('data-score', data["player_list"][id].score);
-                $("#"+id).text(data["player_list"][id].score);
+                $("#" + id).text(data["player_list"][id].score);
             }
             // }
         }
@@ -480,7 +482,7 @@ function update() {
     tip.x = others[socket.id].tip.x;
     tip.y = others[socket.id].tip.y;
 
-    cap.opacity(1,others[socket.id].opa)
+    cap.opacity(1, others[socket.id].opa)
     xpBar.strokeColor = others[socket.id].color;
 
     __Mahou__.save();
@@ -629,17 +631,8 @@ function Player(data) {
     this.list = {};
     this.opa = 1;
     this.opaDir = -1;
-    this.color = 'green';
-    var interval = setInterval(function(obj){
-        return function(){obj.opa < 0 ? obj.opaDir = 1 : obj.opa >=1 ? obj.opaDir = -1 : 0; obj.opa += obj.opaDir*0.1; obj.color = "rgba(61,59,59,"+obj.opa+")";}
-    }(this),50)
-    setTimeout(function(obj){
-        return function(){
-        clearInterval(interval);
-        obj.color = '#3d3b3b';
-        obj.opa = 1;
-        }
-    }(this),4400)
+    this.color = '#3dbdbd';
+    this.invincible = true;
     this.modify = function (id) {
 
         sides = this.level + 2;
@@ -681,6 +674,12 @@ function Player(data) {
         // }
 
 
+        if (this.invincible) {
+            this.opa < 0 ? this.opaDir = 1 : this.opa >= 1 ? this.opaDir = -1 : 0; this.opa += this.opaDir * 0.1; this.color = "rgba(61,59,59," + this.opa + ")";
+        }else{
+            this.color = '#3d3b3b';
+            this.opa = 1;
+        }
 
 
 
@@ -698,7 +697,7 @@ function Player(data) {
         __Mahou__.fill();
         __Mahou__.lineWidth = 3;
         __Mahou__.strokeStyle = this.color //'#3d3b3b';
-        
+
         //this.color = 'green'
         __Mahou__.stroke();
         __Mahou__.fillStyle = '#fff';
