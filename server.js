@@ -125,7 +125,7 @@ io.on('connection', function (socket) {
             freezed: false,
             nitro: false,
             alive: true,
-            username: data.username,
+            username: data.username.replace(/<[^>]*>/,""),
             score: 0,
             invincible: true
         }
