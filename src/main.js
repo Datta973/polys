@@ -450,6 +450,7 @@ function create() {
     })
 
     socket.on("death", function () {
+        $("#namelabel").text("Oops You Died");
         byId("name").focus();
         byId("blackscreen").classList.remove("hidden");
         // socket.emit("start_game", { clientWidth: _canvas.width, clientHeight: _canvas.height, username: username })
