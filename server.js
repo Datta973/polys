@@ -34,7 +34,7 @@ const RAD = (Math.PI / 180);
 
 
 
-let bots = [{ id: "001", username: "Saturn" }, { id: "002", username: "Smashhh" }, { id: "003", username: "Sasuke" }, { id: "004", username: "Fun hack?" }];
+let bots = [{ id: "001", username: "John Cena" }, { id: "002", username: "Kirito" }, { id: "003", username: "Pro Player" }, { id: "004", username: "Nyan" },{ id: "005", username: "Bigg Boss" },{ id: "006", username: "Good boi" }];
 
 for (var i = 0; i < 400; i++) {
     qTree.insert({ x: Math.floor(Math.random() * 3000), y: Math.floor(Math.random() * 3000), radius: 10 });
