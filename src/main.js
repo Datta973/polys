@@ -424,9 +424,9 @@ function create() {
                 others[id].freezed = data["player_list"][id].freezed;
                 others[id].username = data["player_list"][id].username;
                 others[id].invincible = data["player_list"][id].invincible;
-                others[id].score = data["player_list"][id].score;
-                byId(id).parentElement.setAttribute('data-score', data["player_list"][id].score);
-                $("#" + id).text(data["player_list"][id].score);
+                others[id].score = Math.round(data["player_list"][id].experience * 1000);
+                byId(id).parentElement.setAttribute('data-score',others[id].score);
+                $("#" + id).text(others[id].score);
             }
             // }
         }
@@ -446,7 +446,7 @@ function create() {
             return parseInt(a.dataset.score) < parseInt(b.dataset.score);
         }).appendTo("#scoreboard")
 
-        socket.emit('update_data', { angle: angle + 180, nitro: nitro });
+        socket.emit('update_data', { angle: angle , nitro: nitro });
     })
 
     socket.on("death", function () {
@@ -475,10 +475,10 @@ function update() {
         angle = Math.atan2(mouse.x - player.x, - (mouse.y - player.y)) * (180 / Math.PI);
     // x -= speed * Math.cos(d2r(angle));
     // y -= speed * Math.sin(d2r(angle));
-    tip.rotation = angle - 180;
-    eyeBall1.rotation = angle - 90 - 180 - 45;
-    eyeBall2.rotation = angle - 90 - 180 - 45;
-    angle2 = -(angle - 90) + 180;
+    tip.rotation = angle;
+    eyeBall1.rotation = angle - 90  - 45;
+    eyeBall2.rotation = angle - 90 - 45;
+    angle2 = -(angle - 90) ;
 
     tip.x = others[socket.id].tip.x;
     tip.y = others[socket.id].tip.y;

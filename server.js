@@ -21,6 +21,10 @@ let points_sc = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55];
 let temp_data = {};
 let world_width = 3000, world_height = 3000;
 let speed = 10;
+let projectile_speed = 0.5;
+let projectile_range = 70;
+let max_range = 1;
+let test_var = 10;
 
 // let V = SAT.Vector;
 // let P = SAT.Polygon;
@@ -200,10 +204,10 @@ function resend() {
         temp_data[player].cool_counter -= temp_data[player].cool_counter <= 0 ? 0 : 1;
         if (temp_data[player].isFiring) {
             // console.log(dist(players[player].tip, { x: players[player].level * 70 * Math.cos(RAD * -(temp_data[player].angle - 90)), y: -(players[player].level * 70 * Math.sin(RAD * -(temp_data[player].angle - 90))) }));
-            if (dist(players[player].tip, { x: temp_data[player].level * 40 * Math.cos(RAD * -(temp_data[player].angle - 90)), y: -(temp_data[player].level * 40 * Math.sin(RAD * -(temp_data[player].angle - 90))) }) > 10 && temp_data[player].back != true) {
+            if (dist(players[player].tip, { x:  ( (temp_data[player].level * test_var ) + projectile_range )  * Math.cos(RAD * -(temp_data[player].angle - 90)), y: -(  ( (temp_data[player].level * test_var ) + projectile_range )  * Math.sin(RAD * -(temp_data[player].angle - 90))) }) > (max_range) && temp_data[player].back != true) {
 
-                players[player].tip.x += temp_data[player].level * 10 * Math.cos(RAD * -(temp_data[player].angle - 90));
-                players[player].tip.y -= temp_data[player].level * 10 * Math.sin(RAD * -(temp_data[player].angle - 90));
+                players[player].tip.x += ( ( (temp_data[player].level * test_var ) + projectile_range ) * projectile_speed) * Math.cos(RAD * -(temp_data[player].angle - 90));
+                players[player].tip.y -= ( ( (temp_data[player].level * test_var ) + projectile_range ) * projectile_speed) * Math.sin(RAD * -(temp_data[player].angle - 90));
 
                 for (var enemy in players) {
                     if (enemy != player && players[enemy].alive) {
@@ -214,7 +218,7 @@ function resend() {
                             while (players[player].experience >= points_sc[players[player].level]) {
                                 players[player].level++;
                             }
-                            players[player].score += Math.floor(players[enemy].score / 2);
+                            // players[player].score += Math.floor(players[enemy].score / 2);
                             if (players[enemy].bot) {
                                 insertBot(players[enemy]);
                             } else {
@@ -250,8 +254,8 @@ function resend() {
 
                 temp_data[player].back = true;
                 if (dist(players[player].tip, { x: 0, y: 0 }) > 1) {
-                    players[player].tip.x -= temp_data[player].level * 10 * Math.cos(RAD * -(temp_data[player].angle - 90));
-                    players[player].tip.y += temp_data[player].level * 10 * Math.sin(RAD * -(temp_data[player].angle - 90));
+                    players[player].tip.x -= ( ( (temp_data[player].level * test_var ) + projectile_range ) * projectile_speed) * Math.cos(RAD * -(temp_data[player].angle - 90));
+                    players[player].tip.y += ( ( (temp_data[player].level * test_var ) + projectile_range ) * projectile_speed) * Math.sin(RAD * -(temp_data[player].angle - 90));
 
                 } else {
 
@@ -267,14 +271,13 @@ function resend() {
             }
         } else {
             if (players[player].nitro && players[player].experience > 0) {
-                players[player].experience -= 0.1;
-                players[player].score -= 10;
-                speed = 10;
+                players[player].experience -= 0.01;
+                speed = 13;
                 if (players[player].experience < points_sc[players[player].level - 1] && players[player].level != 1) {
                     players[player].level--;
                 }
             } else {
-                speed = 5;
+                speed = 7;
             }
 
 
@@ -359,7 +362,6 @@ function checkCollision(id) {
             qTree.remove(pellet);
             qTree.insert({ x: Math.floor(Math.random() * 3000), y: Math.floor(Math.random() * 3000), radius: 10 });
             plyr.experience += 0.25;
-            plyr.score += 25;
             if (plyr.experience >= points_sc[plyr.level]) {
                 // plyr.experience -= points_sc[plyr.level];
                 plyr.level++;
