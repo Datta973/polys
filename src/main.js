@@ -135,7 +135,7 @@ function create() {
         manager = nipplejs.create(options);
         manager.on("move", function (evt, data) {
             if (hasThrust)
-                angle = -(data.angle.degree + 90) //- 180;
+                angle = -(data.angle.degree - 90) //- 180;
         })
         levelTextWidth = 25;
         levelBarHeight = 30;
