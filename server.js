@@ -15,16 +15,25 @@ let players = {};
 // let pellets = [];
 let requiredPelletData = [];
 let collidedPellets = [];
-let temp = {};
+
 let viewport = new Mahou.Rectangle(0, 0, 0, 0);
-let points_sc = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55];
+let collisionport = new Mahou.Rectangle(0, 0, 0, 0);
+let points_sc = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 68, 93, 120];
 let temp_data = {};
-let world_width = 3000, world_height = 3000;
+let world_width = 3072, world_height = 3072;
 let speed = 10;
-let projectile_speed = 0.5;
+let projectile_speed = 0.3;
 let projectile_range = 70;
-let max_range = 1;
 let test_var = 10;
+
+//temp variables 
+
+let temp = 0;
+let tempNum = 0;
+let tempCos = 0;
+let tempSin = 0;
+let tempX = 0;
+let tempY = 0;
 
 // let V = SAT.Vector;
 // let P = SAT.Polygon;
@@ -38,9 +47,9 @@ const RAD = (Math.PI / 180);
 
 
 
-let bots = [{ id: "001", username: "John Cena" }, { id: "002", username: "Kirito" }, { id: "003", username: "Pro Player" }, { id: "004", username: "Nyan" },{ id: "005", username: "Bigg Boss" },{ id: "006", username: "Good boi" }];
+let bots = [{ id: "001", username: "John Cena" }, { id: "002", username: "Kirito" }, { id: "003", username: "Pro Player" }, { id: "004", username: "Nyan" }, { id: "005", username: "Bigg Boss" }, { id: "006", username: "Good boi" }, { id: "007", username: "ddddd" }, { id: "008", username: "ccccc" }, { id: "009", username: "bbbb" }, { id: "010", username: "aaaa" }];
 
-for (var i = 0; i < 400; i++) {
+for (var i = 0; i < 480; i++) {
     qTree.insert({ x: Math.floor(Math.random() * 3000), y: Math.floor(Math.random() * 3000), radius: 10 });
 }
 
@@ -49,6 +58,8 @@ app.use(express.static("src"))
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/src/index.html');
 });
+
+
 
 for (let bot of bots) {
     insertBot(bot);
@@ -81,7 +92,9 @@ function insertBot(bot) {
         back: false,
         level: 1,
         botNearest: {},
-        cool_counter: 0
+        cool_counter: 0,
+        waste: 0,
+        fireTime: 0
     }
     setTimeout(function () {
         if (players[bot.id]) players[bot.id].invincible = false;
@@ -118,7 +131,7 @@ io.on('connection', function (socket) {
     // circles[socket.id] = new C(new V(), 32);
 
     socket.on("start_game", function (data) {
-        
+
         players[socket.id] = {
             x: random(3000),
             y: random(3000),
@@ -140,7 +153,9 @@ io.on('connection', function (socket) {
             isFiring: false,
             back: false,
             level: 1,
-            cool_counter: 0
+            cool_counter: 0,
+            waste: 0,
+            fireTime: 0
         }
 
         temp_data[socket.id].clientWidth = data.clientWidth;
@@ -202,28 +217,39 @@ http.listen(process.env.PORT || 8080)
 function resend() {
     for (var player in players) {
         temp_data[player].cool_counter -= temp_data[player].cool_counter <= 0 ? 0 : 1;
+        tempCos = Math.cos(RAD * -(temp_data[player].angle - 90));
+        tempSin = Math.sin(RAD * -(temp_data[player].angle - 90));
+        tempX = ((temp_data[player].level * test_var) + projectile_range) * tempCos;
+        tempY = ((temp_data[player].level * test_var) + projectile_range) * tempSin;
         if (temp_data[player].isFiring) {
-            // console.log(dist(players[player].tip, { x: players[player].level * 70 * Math.cos(RAD * -(temp_data[player].angle - 90)), y: -(players[player].level * 70 * Math.sin(RAD * -(temp_data[player].angle - 90))) }));
-            if (dist(players[player].tip, { x:  ( (temp_data[player].level * test_var ) + projectile_range )  * Math.cos(RAD * -(temp_data[player].angle - 90)), y: -(  ( (temp_data[player].level * test_var ) + projectile_range )  * Math.sin(RAD * -(temp_data[player].angle - 90))) }) > (max_range) && temp_data[player].back != true) {
 
-                players[player].tip.x += ( ( (temp_data[player].level * test_var ) + projectile_range ) * projectile_speed) * Math.cos(RAD * -(temp_data[player].angle - 90));
-                players[player].tip.y -= ( ( (temp_data[player].level * test_var ) + projectile_range ) * projectile_speed) * Math.sin(RAD * -(temp_data[player].angle - 90));
+            if (temp_data[player].fireTime <= 2 && temp_data[player].back != true) {
+                temp_data[player].fireTime++;
+                players[player].tip.x += tempX * projectile_speed;
+                players[player].tip.y -= tempY * projectile_speed;
 
                 for (var enemy in players) {
                     if (enemy != player && players[enemy].alive) {
-                        if (dist({ x: players[player].x + players[player].tip.x, y: players[player].y + players[player].tip.y }, players[enemy]) < ((players[player].level + 2) * 4) + 64 && !players[enemy].invincible && !players[player].invincible) {
-                            
+                        if (dist({ x: players[player].x + players[player].tip.x, y: players[player].y + players[player].tip.y }, players[enemy]) < ((players[player].level + 2) * 4) + 68 && !players[enemy].invincible && !players[player].invincible) {
+
                             players[enemy].alive = false;
-                            players[player].experience += Math.floor(players[enemy].experience / 2);
-                            while (players[player].experience >= points_sc[players[player].level]) {
-                                players[player].level++;
-                            }
+                            // players[player].experience += Math.floor(players[enemy].experience / 2);
+                            // while (players[player].experience >= points_sc[players[player].level]) {
+                            //     players[player].level++;
+                            // }
                             // players[player].score += Math.floor(players[enemy].score / 2);
+                            temp = (players[enemy].experience / 0.25) / 2;
+                            tempNum = Math.sqrt(temp) * 15;
+                            for (var i = 0; i < temp; i++) {
+                                qTree.insert({ x: random(players[enemy].x - tempNum, players[enemy].x + tempNum), y: random(players[enemy].y - tempNum, players[enemy].y + tempNum), radius: 15 });
+                            }
+
                             if (players[enemy].bot) {
                                 insertBot(players[enemy]);
                             } else {
                                 io.to(enemy).emit("death");
                             }
+
 
                         }
                     }
@@ -253,12 +279,13 @@ function resend() {
             } else {
 
                 temp_data[player].back = true;
-                if (dist(players[player].tip, { x: 0, y: 0 }) > 1) {
-                    players[player].tip.x -= ( ( (temp_data[player].level * test_var ) + projectile_range ) * projectile_speed) * Math.cos(RAD * -(temp_data[player].angle - 90));
-                    players[player].tip.y += ( ( (temp_data[player].level * test_var ) + projectile_range ) * projectile_speed) * Math.sin(RAD * -(temp_data[player].angle - 90));
+                if (temp_data[player].fireTime > 0) {
+                    temp_data[player].fireTime--;
+                    players[player].tip.x -= (((temp_data[player].level * test_var) + projectile_range) * projectile_speed) * tempCos;
+                    players[player].tip.y += (((temp_data[player].level * test_var) + projectile_range) * projectile_speed) * tempSin;
 
                 } else {
-
+                    temp_data[player].fireTime = 0;
                     temp_data[player].isFiring = false;
                     temp_data[player].level = players[player].level;
                     players[player].tip.x = 0;
@@ -272,12 +299,17 @@ function resend() {
         } else {
             if (players[player].nitro && players[player].experience > 0) {
                 players[player].experience -= 0.01;
-                speed = 13;
+                temp_data[player].waste += 1;
+                if (temp_data[player].waste >= 25) {
+                    qTree.insert({ x: Math.floor(Math.random() * 3000), y: Math.floor(Math.random() * 3000), radius: 10 });
+                    temp_data[player].waste = 0;
+                }
+                speed = 11;
                 if (players[player].experience < points_sc[players[player].level - 1] && players[player].level != 1) {
                     players[player].level--;
                 }
             } else {
-                speed = 7;
+                speed = 6;
             }
 
 
@@ -285,19 +317,29 @@ function resend() {
             players[player].x += speed * Math.cos(RAD * -(players[player].angle - 90));
             players[player].y -= speed * Math.sin(RAD * -(players[player].angle - 90));
 
+            players[player].x = Math.floor(players[player].x);
+            players[player].y = Math.floor(players[player].y);
+
             if (players[player].bot) {
                 for (var enemy in players) {
                     if (enemy != player && players[enemy].alive) {
                         if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < 400 && !players[enemy].invincible) {
-                            players[player].angle = (Math.atan2((players[player].y - players[enemy].y), (players[player].x - players[enemy].x)) * 180 / Math.PI - 90);
-                            if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < players[player].level * 70) {
-                                if (!players[player].freezed && temp_data[player].cool_counter == 0) {
-                                    temp_data[player].isFiring = true;
-                                    temp_data[player].angle = players[player].angle;
-                                    players[player].freezed = true;
-                                    temp_data[player].cool_counter = 5 * temp_data[player].level;
+                            if (players[player].level > players[enemy].level) {
+                                players[player].nitro = false;
+                                players[player].angle = (Math.atan2((players[player].y - players[enemy].y), (players[player].x - players[enemy].x)) * 180 / Math.PI - 90);
+                                if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < players[player].level * 70) {
+                                    if (!players[player].freezed && temp_data[player].cool_counter == 0) {
+                                        temp_data[player].isFiring = true;
+                                        temp_data[player].angle = players[player].angle;
+                                        players[player].freezed = true;
+                                        temp_data[player].cool_counter = 5 * temp_data[player].level;
+                                    }
                                 }
+                            }else{
+                                players[player].nitro = true;
                             }
+                        }else{
+                            players[player].nitro = false;
                         }
                     }
                 }
@@ -330,9 +372,13 @@ function resend() {
         viewport.w = temp_data[player].clientWidth;
         viewport.h = temp_data[player].clientHeight;
         requiredPelletData = qTree.query(viewport);
-        if (!players[player].isFiring)
-            checkCollision(player)
-        removePellets();
+        if (!players[player].isFiring) {
+            collisionport.x = players[player].x;
+            collisionport.y = players[player].y;
+            collisionport.w = 64;
+            collisionport.h = 64;
+            checkCollision(player, qTree.query(collisionport))
+        }
 
 
         io.to(player).emit('update_data', { player_list: players, food_data: requiredPelletData })
@@ -354,14 +400,13 @@ function random() {
     }
 }
 
-function checkCollision(id) {
+function checkCollision(id, coQualiPellets) {
     plyr = players[id];
-    for (let pellet of requiredPelletData) {
+    for (let pellet of coQualiPellets) {
         if (dist(plyr, pellet) < 32 + pellet.radius) {
             collidedPellets.push(pellet);
             qTree.remove(pellet);
-            qTree.insert({ x: Math.floor(Math.random() * 3000), y: Math.floor(Math.random() * 3000), radius: 10 });
-            plyr.experience += 0.25;
+            plyr.experience += pellet.radius == 10 ? 0.25 : 0.5;
             if (plyr.experience >= points_sc[plyr.level]) {
                 // plyr.experience -= points_sc[plyr.level];
                 plyr.level++;
@@ -369,6 +414,7 @@ function checkCollision(id) {
             }
         }
     }
+    removePellets();
 }
 
 function removePellets() {

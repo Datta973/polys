@@ -17,10 +17,44 @@ html, body {
       transition: 0.5s;
 }
 
-#scoreboard{
+/* #scoreboard{
       font-family: cursive;
       user-select: none;
       word-wrap: none;
+      
+} */
+
+#scoreboard {
+	
+      height: auto;
+      font-family: cursive;
+      font-size: .8em;
+}
+
+.row {
+	position: relative;
+	display: block;
+	width: 100%;
+	/* height: 40px; */
+
+}
+
+.name {
+	position: relative;
+	display: inline-block;
+      width: 70%;
+      max-width: 75%;
+      color: white;
+      overflow: hidden;
+      text-overflow: ellipsis;
+	/* line-height: 45px; */
+}
+
+.score {
+	position: relative;
+	display: inline-block;
+      width: 30%;
+      color: #2ecc71;
       
 }
 

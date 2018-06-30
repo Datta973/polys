@@ -36,7 +36,7 @@ let tipX, tipY;
 let level = 1;
 let usedPoints = 0;
 let availablePoints = 10;
-let points_sc = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55];
+let points_sc = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 68, 93, 120];
 
 let test;
 let sides = 3;
@@ -48,8 +48,8 @@ let food = [];
 
 let colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#f1c40f", "#e67e22", "#e74c3c", "#ecf0f1"];
 
-const world_width = 3000;
-const world_height = 3000;
+const world_width = 3072;
+const world_height = 3072;
 
 let connectedToServer = false;
 let mobileDevice = false;
@@ -61,6 +61,8 @@ let manager;
 let username = " ";
 let levelTextWidth = 21;
 let levelBarHeight = 18;
+
+let participants = [];
 
 window.mobilecheck = function () {
     var check = false;
@@ -81,6 +83,7 @@ function setup() {
     _canvas.width = window.innerWidth;
     _canvas.height = window.innerHeight;
     frameRate = 100;
+    glow = loadSpriteSheet("images/glow_b.png")
 }
 
 function create() {
@@ -168,7 +171,8 @@ function create() {
 
 
     player = new rectangle(_canvas.width / 2, _canvas.height / 2, 50, 7);
-    cap = new ellipse(0, 0, 20, 20);
+    cap = new ellipse(0, 0, 32, 32);
+    cap.gradient = cap.shadow = true;
     eye1 = new ellipse(-7, 0, 7, 7);
     eye2 = new ellipse(7, 0, 7, 7);
     eyeBall1 = new ellipse(0, 0, 3, 3);
@@ -180,9 +184,7 @@ function create() {
     healthBar = new percentageBar(0, 27, 50, 3.5);
     xpBar = new circularLevelBar(player.x, player.y, 32);
 
-    // speedBar = new percentageBar(100, _canvas.height - 70, 140, 10, 2);
-    // rangeBar = new percentageBar(100, _canvas.height - 50, 140, 10, 2);
-    // movementSpeedBar = new percentageBar(100, _canvas.height - 30, 140, 10, 2);
+
 
     levelBar = new percentageBar(153, 18, 300, levelBarHeight, 2);
     levelBar.fillStyle("#dcdde1")
@@ -195,59 +197,15 @@ function create() {
     levelText.fontBorder = true;
     levelText.bold = true;
 
-    // pointsText = new Text("x" + availablePoints, speedBar.x - speedBar.width / 2, speedBar.y - 30, 25);
-    // pointsText.fillStyle("transparent");
-    // pointsText.family = 'cursive';
-    // pointsText.strokeStyle("transparent");
-    // pointsText.fontBorderColor = '#000';
-    // pointsText.fontBorder = true;
-    // pointsText.bold = true;
-    // pointsText.fontBorderWidth = 1.5;
-
-    // speedText = new Text("Pointer Speed", speedBar.x + speedBar.width / 2 + 10, speedBar.y - speedBar.height / 2);
-    // speedText.fillStyle("#8e44ad")
-    // speedText.opacity(0, 0);
-    // rangeText = new Text("Pointer Range", rangeBar.x + rangeBar.width / 2 + 10, rangeBar.y - rangeBar.height / 2);
-    // rangeText.fillStyle("#8e44ad")
-    // rangeText.opacity(0, 0);
-    // movementSpeedText = new Text("Body Speed", movementSpeedBar.x + movementSpeedBar.width / 2 + 10, movementSpeedBar.y - movementSpeedBar.height / 2, 20);
-    // movementSpeedText.fillStyle("#8e44ad")
-    // movementSpeedText.opacity(0, 0);
-
-    // speedTween = speedText.tween.add({ _fillOpacity: 0 }, { _fillOpacity: 1 }, 10);
-    // rangeTween = rangeText.tween.add({ _fillOpacity: 0 }, { _fillOpacity: 1 }, 10);
-    // movementSpeedTween = movementSpeedText.tween.add({ _fillOpacity: 0 }, { _fillOpacity: 1 }, 10);
-
-    // speedBar.primaryColor("#2ecc71");
-    // rangeBar.primaryColor("#3498db");
-    // movementSpeedBar.primaryColor("#e74c3c");
-
-    // speedBar.secondaryColor("#dcdde1");
-    // rangeBar.secondaryColor("#dcdde1");
-    // movementSpeedBar.secondaryColor("#dcdde1");
 
     levelBar.primaryColor("#686de0");
     levelBar.secondaryColor("transparent");
 
 
 
-    // speedText.size(15);
-    // rangeText.size(15);
-    // movementSpeedText.size(15);
-
-
     levelBar.health = 0;
 
-    // speedText.padding = rangeText.padding = movementSpeedText.padding = 4;
 
-    // speedBar.health = 100 / 6;
-    // rangeBar.health = 100 / 6;
-    // movementSpeedBar.health = 100 / 6;
-
-    // //healthBar.border = false;
-    // speedBar.opacity(0.5, 0.5);
-    // rangeBar.opacity(0.5, 0.5);
-    // movementSpeedBar.opacity(0.5, 0.5);
 
     eye1.borderWidth = 3;
     eye2.borderWidth = 3;
@@ -265,7 +223,8 @@ function create() {
     player.borderWidth = 3;
     player.origin(0, 3.5);
     cap.borderWidth = 3;
-    cap.strokeStyle("#3d3b3b");
+    // cap.strokeStyle("#3d3b3b");
+    cap.strokeStyle("transparent");
     player.strokeStyle("#3d3b3b");
     player.fillStyle("#16a085");
     cap.fillStyle("#27ae60");
@@ -274,7 +233,7 @@ function create() {
     player.opacity(0, 0);
     //tip.opacity(0,1)
     player.circumRadius = cap.circumRadius;
-    stage.addChild(xpBar);
+    //stage.addChild(xpBar);
     eye1.addChild(eyeBall1);
     eye2.addChild(eyeBall2);
     cap.addChild(eye1);
@@ -284,14 +243,7 @@ function create() {
     //player.addChild(healthBar);
     levelBar.addChild(levelText)
     stage.addChild(player);
-    // stage.addChild(pointsText);
-    // stage.addChild(speedBar);
-    // stage.addChild(rangeBar);
-    // stage.addChild(movementSpeedBar);
-    // stage.addChild(speedText)
-    // stage.addChild(rangeText)
-    // stage.addChild(movementSpeedText);
-    stage.addChild(levelBar)
+
 
     let color = 3;
     let temp;
@@ -313,73 +265,6 @@ function create() {
 
     // event handlers
 
-    // speedBar.on("mouseover", function () {
-    //     speedBar.opacity(1, 1);
-    //     speedTween.from._fillOpacity = 0;
-    //     speedTween.to._fillOpacity = 1;
-    //     speedText.tween.start(speedTween);
-    // })
-    // speedBar.on("mouseout", function () {
-    //     speedBar.opacity(0.5, 0.5);
-    //     speedTween.from._fillOpacity = 1;
-    //     speedTween.to._fillOpacity = 0;
-    //     speedText.tween.start(speedTween);
-    // })
-
-    // rangeBar.on("mouseover", function () {
-    //     rangeBar.opacity(1, 1);
-    //     rangeTween.from._fillOpacity = 0;
-    //     rangeTween.to._fillOpacity = 1;
-    //     rangeText.tween.start(rangeTween);
-    // })
-    // rangeBar.on("mouseout", function () {
-    //     rangeBar.opacity(0.5, 0.5);
-    //     rangeTween.from._fillOpacity = 1;
-    //     rangeTween.to._fillOpacity = 0;
-    //     rangeText.tween.start(rangeTween);
-    // })
-
-    // movementSpeedBar.on("mouseover", function () {
-    //     movementSpeedBar.opacity(1, 1);
-    //     movementSpeedTween.from._fillOpacity = 0;
-    //     movementSpeedTween.to._fillOpacity = 1;
-    //     movementSpeedText.tween.start(movementSpeedTween);
-
-    // })
-    // movementSpeedBar.on("mouseout", function () {
-    //     movementSpeedBar.opacity(0.5, 0.5);
-    //     movementSpeedTween.from._fillOpacity = 1;
-    //     movementSpeedTween.to._fillOpacity = 0;
-    //     movementSpeedText.tween.start(movementSpeedTween);
-    // })
-
-    // speedBar.on("click", function () {
-
-    //     if (availablePoints == 0 || speedBar.health >= 100 || usedPoints == 10) return;
-    //     usedPoints += 1;
-    //     _speed += 20;
-    //     speedBar.health += 100 / 6;
-    //     availablePoints--;
-    //     pointsText.string = "x" + availablePoints;
-    // })
-
-    // rangeBar.on("click", function () {
-    //     if (availablePoints == 0 || rangeBar.health >= 100 || usedPoints == 10) return;
-    //     usedPoints += 1;
-    //     _range += 60;
-    //     rangeBar.health += 100 / 6;
-    //     availablePoints--;
-    //     pointsText.string = "x" + availablePoints;
-    // })
-
-    // movementSpeedBar.on("click", function () {
-    //     if (availablePoints == 0 || movementSpeedBar.health >= 100 || usedPoints == 10) return;
-    //     usedPoints += 1;
-    //     speed += 0.3;
-    //     movementSpeedBar.health += 100 / 6;
-    //     availablePoints--;
-    //     pointsText.string = "x" + availablePoints;
-    // })
 
 
     // end of event handlers
@@ -402,7 +287,6 @@ function create() {
 
             if (data["player_list"][id] == undefined || !data["player_list"][id].alive) {
                 delete others[id];
-                console.log(id)
                 byId(id).parentElement.remove();
             }
         }
@@ -412,11 +296,20 @@ function create() {
             if (!others[id]) {
                 if (!data["player_list"][id].alive) continue;
                 others[id] = new Player(data["player_list"][id]);
-                byId("scoreboard").append("<li data-score=0 ><div class='displayname'  >" + data["player_list"][id].username + "</div>" +" - "+"<font id='" + id + "' ></font></li>")
+                $("#scoreboard").append(`
+                <div class="row">
+                <div class="name">${data["player_list"][id].username}</div><div id=${id} class="score">0</div>
+                </div>
+                `)
+                //byId("scoreboard").append("<li data-score=0 ><div class='displayname'  >" + data["player_list"][id].username + "</div>" + " - " + "<font id='" + id + "' ></font></li>")
             }
             else {
+                time = 0;
+                others[id].previous.x = others[id].target.x;
+                others[id].previous.y = others[id].target.y;
                 others[id].target.x = data["player_list"][id].x;
                 others[id].target.y = data["player_list"][id].y;
+                // others[id].time = 1;
                 others[id].xpBar.level = (data["player_list"][id].level - 1) * 10;
                 others[id].level = data["player_list"][id].level;
                 others[id].rotation.target = data["player_list"][id].angle;
@@ -425,8 +318,9 @@ function create() {
                 others[id].username = data["player_list"][id].username;
                 others[id].invincible = data["player_list"][id].invincible;
                 others[id].score = Math.round(data["player_list"][id].experience * 1000);
-                byId(id).parentElement.setAttribute('data-score',others[id].score);
-                $("#" + id).text(others[id].score);
+                //byId(id).parentElement.setAttribute('data-score', others[id].score);
+                participants.push({ id: id, score: others[id].score, name: others[id].username })
+                //$("#" + id).text(others[id].score);
             }
             // }
         }
@@ -439,14 +333,30 @@ function create() {
             sides = data["player_list"][socket.id].level + 2;
             tip.sides(sides)
             tip.radius(sides * 4)
-            tip.origin(- tip.inRadius + cap.width / 2 - xpBar.width / 2 - 6, 15);
+            tip.origin(- tip.inRadius - (cap.width / 4) - 3, 15);
         }
 
-        $("#scoreboard").children().sort(function (a, b) {
-            return parseInt(a.dataset.score) < parseInt(b.dataset.score);
-        }).appendTo("#scoreboard")
+        // $("#scoreboard").children().sort(function (a, b) {
+        //     return parseInt(a.dataset.score) < parseInt(b.dataset.score);
+        // }).appendTo("#scoreboard")
 
-        socket.emit('update_data', { angle: angle , nitro: nitro });
+        participants.sort(function (a, b) {
+            return b.score - a.score;
+        })
+
+        $("#scoreboard").empty();
+
+        for (let participant of participants) {
+            $("#scoreboard").append(`
+                <div class="row">
+                <div class="name">${participant.name}</div><div id="${participant.id}" class="score">${participant.score}</div>
+                </div>
+            `)
+        }
+
+        participants = [];
+
+        socket.emit('update_data', { angle: angle, nitro: nitro });
     })
 
     socket.on("death", function () {
@@ -459,6 +369,19 @@ function create() {
     // *** socket ***
 }
 
+// setInterval(function () {
+//     let elements = []
+//     let container = document.querySelector('#scoreboard')
+//     // Add each row to the array
+//     container.querySelectorAll('.row').forEach(el => elements.push(el))
+//     // Clear the container
+//     container.innerHTML = ''
+//     // Sort the array from highest to lowest
+//     elements.sort((a, b) => b.querySelector('.score').textContent - a.querySelector('.score').textContent)
+//     // Put the elements back into the container
+//     elements.forEach(e => container.appendChild(e))
+// }, 500)
+
 function update() {
     if (!connectedToServer) {
         __Mahou__.fillText("connecting to server...", _canvas.width / 2, _canvas.height / 2);
@@ -466,26 +389,25 @@ function update() {
     };
 
     if (!others[socket.id]) {
-        // console.log("this is worse")
-        //replay();
         return;
     }
-    // face decoration updates
+
     if (!others[socket.id].freezed && !mobileDevice)
         angle = Math.atan2(mouse.x - player.x, - (mouse.y - player.y)) * (180 / Math.PI);
-    // x -= speed * Math.cos(d2r(angle));
-    // y -= speed * Math.sin(d2r(angle));
+
+    //console.log(others[socket.id].target.x, others[socket.id].x, others[socket.id].time)
+
     tip.rotation = angle;
-    eyeBall1.rotation = angle - 90  - 45;
+    eyeBall1.rotation = angle - 90 - 45;
     eyeBall2.rotation = angle - 90 - 45;
-    angle2 = -(angle - 90) ;
+    angle2 = -(angle - 90);
 
     tip.x = others[socket.id].tip.x;
     tip.y = others[socket.id].tip.y;
 
-    cap.opacity(1, others[socket.id].opa)
-    xpBar.strokeColor = others[socket.id].color;
-
+    cap.opacity(others[socket.id].opa, 1)
+    //xpBar.strokeColor = others[socket.id].color;
+    xpBar.strokeColor = "transparent"
     __Mahou__.save();
     __Mahou__.translate(player.x - others[socket.id].x, player.y - others[socket.id].y);
     moved();
@@ -514,16 +436,19 @@ function update() {
 
 function moved() {
     // #mover - draw something here you want to move with world
-    for (var i = 0; i <= world_width / 20; i++) {
-        __Mahou__.lineWidth = 1;
-        __Mahou__.beginPath();
-        __Mahou__.strokeStyle = "lightgray";
-        __Mahou__.moveTo(20 * i, 0);
-        __Mahou__.lineTo(20 * i, world_height);
-        __Mahou__.moveTo(0, 20 * i);
-        __Mahou__.lineTo(world_width, 20 * i);
-        __Mahou__.stroke();
-    }
+    // for (var i = 0; i <= world_width / 20; i++) {
+    //     __Mahou__.lineWidth = 1;
+    //     __Mahou__.beginPath();
+    //     __Mahou__.strokeStyle = "lightgray";
+    //     __Mahou__.moveTo(20 * i, 0);
+    //     __Mahou__.lineTo(20 * i, world_height);
+    //     __Mahou__.moveTo(0, 20 * i);
+    //     __Mahou__.lineTo(world_width, 20 * i);
+    //     __Mahou__.stroke();
+    // }
+    __Mahou__.fillStyle = back;
+    __Mahou__.rect(0, 0, world_width, world_height);
+    __Mahou__.fill();
 
     //end #mover
 }
@@ -539,8 +464,8 @@ function fixed() {
 
     __Mahou__.fillStyle = 'white';
     __Mahou__.strokeStyle = 'black';
-    __Mahou__.lineWidth = '1.5';
-    __Mahou__.font = "25px cursive bold";
+    __Mahou__.lineWidth = '2';
+    __Mahou__.font = "bold 25px cursive";
     __Mahou__.fillText(others[socket.id].username, _canvas.width / 2 - 32, _canvas.height / 2 - 45);
     __Mahou__.strokeText(others[socket.id].username, _canvas.width / 2 - 32, _canvas.height / 2 - 45)
 
@@ -626,6 +551,7 @@ function Player(data) {
     this.y = data.y;
     this.tip = { x: data.tip.x, y: data.tip.y, sides: 3 };
     this.target = { x: this.x, y: this.y, tip: this.tip };
+    this.previous = { x: this.x, y: this.y };
     this.rotation = { target: data.angle, current: data.angle }
     this.xpBar = new circularLevelBar(data.x, data.y, 32);
     this.level = 1;
@@ -633,52 +559,34 @@ function Player(data) {
     this.opa = 1;
     this.opaDir = -1;
     this.color = '#3dbdbd';
+    this.color = '#fff';
     this.invincible = true;
-    this.modify = function (id) {
+    this.time = 1;
+    this.modify = function () {
 
         sides = this.level + 2;
-        // tip.origin(- tip.inRadius + cap.width/2 - xpBar.width/2 - 6,15 );
-        // var points = [];
-        // polys[id].pos = new V(this.x + this.tip.x + rcos( sides * 7 * Math.cos(Math.PI / sides) + 34,-(this.rotation.current - 90) ), this.y + this.tip.y + rsin( -( sides * 7 * Math.cos(Math.PI / sides) + 34),-(this.rotation.current - 90)) );
-
-        // points.push(new V(polys[id].pos.x + sides * 7, polys[id].pos.y + 0));
-        // for (var i = 1; i < sides; i++) {
-        //     points.push(new V(polys[id].pos.x + sides * 7 * Math.cos(i * (Math.PI * 2) / sides), polys[id].pos.y + sides * 7 * Math.sin(i * (Math.PI * 2) / sides)));
-        // }
-
-        // polys[id].setPoints(points);
-
-        // polys[id].rotate(d2r(this.rotation.current - 90 ))
-
-        this.x += (this.target.x - this.x) / 2;
-        this.y += (this.target.y - this.y) / 2;
+        this.time++;
+        if(this.time < 6){
+            this.time = 0;
+            this.x += (this.target.x - this.x) / 6
+            this.y += (this.target.y - this.y) / 6 
+        }
+        // this.x = this.previous.x + ((this.target.x - this.previous.x) / 2 * this.time)
+        // this.y = this.previous.y + ((this.target.y - this.previous.y) / 2 * this.time)
+       
 
         this.tip.x += (this.target.tip.x - this.tip.x) / 2;
         this.tip.y += (this.target.tip.y - this.tip.y) / 2;
 
-        this.rotation.current += (((((this.rotation.target - this.rotation.current) % 360) + 540) % 360) - 180) / 2;
 
-        // for (var item in this.list.polys) {
-        //     __Mahou__.beginPath();
-        //     __Mahou__.moveTo(this.list.polys[item].points[0].x, this.list.polys[item].points[0].y);
-        //     for (var i = 1; i < this.list.polys[item].points.length; i++) {
-        //         __Mahou__.lineTo(this.list.polys[item].points[i].x, this.list.polys[item].points[i].y);
-        //     }
-        //     __Mahou__.fillStyle = '#000';
-        //     __Mahou__.fill();
-        // }
-        // for (var item in this.list.circles) {
-        //     __Mahou__.beginPath();
-        //     __Mahou__.arc(this.list.circles[item].pos.x, this.list.circles[item].pos.y, this.list.circles[item].r, 0, 2 * Math.PI);
-        //     __Mahou__.fillStyle = 'red';
-        //     __Mahou__.fill();
-        // }
+        this.rotation.current += (((((this.rotation.target - this.rotation.current) % 360) + 540) % 360) - 180) / 2;
 
 
         if (this.invincible) {
             this.opa < 0 ? this.opaDir = 1 : this.opa >= 1 ? this.opaDir = -1 : 0; this.opa += this.opaDir * 0.1; this.color = "rgba(61,59,59," + this.opa + ")";
-        }else{
+        } else {
             this.color = '#3d3b3b';
+            this.color = '#fff';
             this.opa = 1;
         }
 
@@ -689,20 +597,30 @@ function Player(data) {
         this.xpBar.x = this.x;
         this.xpBar.y = this.y;
         this.xpBar.strokeColor = this.color;
-        this.xpBar.executeBluePrint();
+        // this.xpBar.executeBluePrint();
 
+
+        var radgrad = __Mahou__.createRadialGradient(this.x, this.y, 0, this.x, this.y, 32);
+        radgrad.addColorStop(0, 'rgba(255, 56, 46,' + this.opa + ')');
+        // radgrad.addColorStop(0.8, 'rgba(192, 57, 43,1)');
+        radgrad.addColorStop(1, 'rgba(160, 57, 43,1)');
         __Mahou__.beginPath();
-        __Mahou__.arc(this.x, this.y, 20, 0, 2 * Math.PI);
+        __Mahou__.arc(this.x, this.y, 32, 0, 2 * Math.PI);
         __Mahou__.closePath();
-        __Mahou__.fillStyle = '#e74c3c';
+        // __Mahou__.fillStyle = '#e74c3c';
+        __Mahou__.shadowBlur = 20;
+        __Mahou__.shadowColor = "#000";
+        __Mahou__.fillStyle = radgrad;
         __Mahou__.fill();
+        __Mahou__.shadowColor = "transparent";
         __Mahou__.lineWidth = 3;
         __Mahou__.strokeStyle = this.color //'#3d3b3b';
 
         //this.color = 'green'
-        __Mahou__.stroke();
+        //__Mahou__.stroke();
         __Mahou__.fillStyle = '#fff';
-        __Mahou__.strokeStyle = '#34495e';
+        // __Mahou__.strokeStyle = '#34495e';
+        __Mahou__.strokeStyle = '#fff';
         __Mahou__.lineWidth = 3;
         __Mahou__.strokeStyle = 'black';
         __Mahou__.beginPath();
@@ -754,7 +672,7 @@ function Player(data) {
         __Mahou__.fillStyle = 'white';
         __Mahou__.strokeStyle = 'black';
         __Mahou__.lineWidth = '1.5';
-        __Mahou__.font = "25px cursive bold";
+        __Mahou__.font = "bold 20px cursive";
         __Mahou__.fillText(this.username, this.x - 32, this.y - 45);
         __Mahou__.strokeText(this.username, this.x - 32, this.y - 45);
 
@@ -763,21 +681,41 @@ function Player(data) {
 
 function drawOthers() {
     for (var enemy in others) {
-        others[enemy].modify(enemy);
+        others[enemy].modify();
         if (enemy != socket.id)
             others[enemy].draw();
+        // else
+        //     console.log(others[enemy].previous.x,others[enemy].target.x,others[enemy].x,others[enemy].time)
+        //console.log(others[enemy].target.x,others[enemy].previous.x)//,others[enemy].x)
     }
 }
 
+
 function drawFood() {
+    __Mahou__.globalCompositeOperation = "lighter";
+
+
+
     for (let pellet of food) {
         __Mahou__.beginPath();
+        var radgrad = __Mahou__.createRadialGradient(pellet.x, pellet.y, 0, pellet.x, pellet.y, pellet.radius);
+        radgrad.addColorStop(0, 'rgba(41,128,185,1)');
+        radgrad.addColorStop(0.8, 'rgba(41,128,185,.5)');
+        radgrad.addColorStop(1, 'rgba(41,128,185,0)');
+        // __Mahou__.fillStyle = "#2980b9";
+        __Mahou__.fillStyle = radgrad;
+        
         __Mahou__.arc(pellet.x, pellet.y, pellet.radius, 0, 2 * Math.PI);
-        __Mahou__.fillStyle = "#3498db"//"#9b59b6"//"#e67e22";
+        __Mahou__.globalAlpha = 1;
         __Mahou__.fill();
+        __Mahou__.globalAlpha = 1;
+        __Mahou__.globalCompositeOperation = "lighter";
+        __Mahou__.drawImage(glow, pellet.x - 32 * (pellet.radius / 10), pellet.y - 32 * (pellet.radius / 10), 64 * (pellet.radius / 10), 64 * (pellet.radius / 10));
+
+
         __Mahou__.strokeStyle = "#000"//'#34495e';
         __Mahou__.lineWidth = 3;
-        __Mahou__.stroke();
+        //__Mahou__.stroke();
     }
 }
 

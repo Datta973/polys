@@ -35,6 +35,11 @@ Array.prototype.remove = function (id) {
     this.splice(this.indexOf(id), 1);
 }
 
+// let backgroundImage = loadSpriteSheet("images/blackback_1.png");
+let backgroundImage = loadSpriteSheet("images/PSA.png");
+let back;
+
+
 
 
 document.onreadystatechange = () => {
@@ -413,14 +418,30 @@ class rectangle extends MahouObject {
 
 class ellipse extends MahouObject {
     constructor(x, y, w, h) {
+        var radgrad;
         super(x, y, 2 * w, 2 * h);
         this.portion = 1;
         this.circumRadius = w > h ? w : h;
+        this.gradient = false;
+        this.shadow = false;
         this.executeBluePrint = function () {
+
             __Mahou__.beginPath();
             __Mahou__.ellipse(this._absPos.x - this._origin.x + this.width / 2, this._absPos.y - this._origin.y + this.height / 2, this.width / 2, this.height / 2, 0 * Math.PI / 180, 0, this.portion * 2 * Math.PI);
             __Mahou__.closePath();
+            if (this.gradient) {
+                radgrad = __Mahou__.createRadialGradient(this._absPos.x, this._absPos.y, 0, this._absPos.x, this._absPos.y, 32);
+                radgrad.addColorStop(0, 'rgba(39, 255, 96,' + this._fillOpacity + ')');
+                radgrad.addColorStop(1, 'rgba(42, 100, 105,' + this._fillOpacity + ')');
+                // radgrad.addColorStop(1, 'rgba(46, 255, 113,1)');
+                __Mahou__.fillStyle = radgrad;
+            }
+            if (this.shadow) {
+                __Mahou__.shadowBlur = 20;
+                __Mahou__.shadowColor = "#000";
+            }
             __Mahou__.fill();
+            __Mahou__.shadowColor = "transparent";
             if (mouse) {
                 this.mouseIsOver = __Mahou__.isPointInPath(mouse.x, mouse.y) || __Mahou__.isPointInStroke(mouse.x, mouse.y);
             }
@@ -573,7 +594,8 @@ class circularLevelBar extends MahouObject {
     constructor(x, y, radius) {
         super(x, y, 2 * radius, 2 * radius)
         this.level = 0;
-        this.strokeColor = "#3d3b3b";
+        // this.strokeColor = "#3d3b3b";
+        this.strokeColor = "#fff";
         this._stroke = function () { }
         this.executeBluePrint = function () {
 
@@ -661,6 +683,12 @@ function canvas(id) {
     __Mahou__ = _canvas.getContext("2d");
     __Mahou__.width = parseInt(document.getElementById(id).getAttribute("width"));
     __Mahou__.height = parseInt(document.getElementById(id).getAttribute("height"));
+
+    backgroundImage.onload = function () {
+        back = __Mahou__.createPattern(backgroundImage, "repeat");
+    }
+
+
     _canvas.addEventListener("mousemove", function (e) {
         mouse = windowToCanvas(e.clientX, e.clientY);
     })
@@ -844,7 +872,7 @@ function cursor() {
 }
 
 function loop() {
-    background("#f1f1f1");
+    background("#2c3e50");
     update();
     requestAnimationFrame(loop);
 }
