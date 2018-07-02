@@ -1,5 +1,6 @@
 // socket dependencies
-let socket = io();
+// let socket = io();
+let socket = io.connect("https://polys.herokuapp.com");
 // end socket dependencies
 
 var x, y,
