@@ -340,9 +340,13 @@ function create() {
         //     return parseInt(a.dataset.score) < parseInt(b.dataset.score);
         // }).appendTo("#scoreboard")
 
+
+
         participants.sort(function (a, b) {
             return b.score - a.score;
         })
+
+        participants.splice(10, participants.length - 10);
 
         $("#scoreboard").empty();
 
@@ -353,6 +357,7 @@ function create() {
                 </div>
             `)
         }
+        $("#" + socket.id).parent().css("background", "rgb(41, 128, 185)")
 
         participants = [];
 
@@ -466,8 +471,8 @@ function fixed() {
     __Mahou__.strokeStyle = 'black';
     __Mahou__.lineWidth = '2';
     __Mahou__.font = "bold 25px cursive";
-    __Mahou__.fillText(others[socket.id].username, _canvas.width / 2 - 32, _canvas.height / 2 - 45);
-    __Mahou__.strokeText(others[socket.id].username, _canvas.width / 2 - 32, _canvas.height / 2 - 45)
+    __Mahou__.fillText(others[socket.id].username.substring(0,15), _canvas.width / 2 - 32, _canvas.height / 2 - 45);
+    __Mahou__.strokeText(others[socket.id].username.substring(0,15), _canvas.width / 2 - 32, _canvas.height / 2 - 45)
 
 
     // if (!hasThrust) {
@@ -562,18 +567,17 @@ function Player(data) {
     this.color = '#fff';
     this.invincible = true;
     this.time = 1;
+    this.username = "";
     this.modify = function () {
 
         sides = this.level + 2;
-        this.time++;
-        if(this.time < 6){
-            this.time = 0;
-            this.x += (this.target.x - this.x) / 6
-            this.y += (this.target.y - this.y) / 6 
-        }
+
+        this.x += (this.target.x - this.x) / 6
+        this.y += (this.target.y - this.y) / 6
+
         // this.x = this.previous.x + ((this.target.x - this.previous.x) / 2 * this.time)
         // this.y = this.previous.y + ((this.target.y - this.previous.y) / 2 * this.time)
-       
+
 
         this.tip.x += (this.target.tip.x - this.tip.x) / 2;
         this.tip.y += (this.target.tip.y - this.tip.y) / 2;
@@ -673,8 +677,8 @@ function Player(data) {
         __Mahou__.strokeStyle = 'black';
         __Mahou__.lineWidth = '1.5';
         __Mahou__.font = "bold 20px cursive";
-        __Mahou__.fillText(this.username, this.x - 32, this.y - 45);
-        __Mahou__.strokeText(this.username, this.x - 32, this.y - 45);
+        __Mahou__.fillText(this.username.substring(0,10), this.x - 32, this.y - 45);
+        __Mahou__.strokeText(this.username.substring(0,10), this.x - 32, this.y - 45);
 
     }
 }
@@ -704,7 +708,7 @@ function drawFood() {
         radgrad.addColorStop(1, 'rgba(41,128,185,0)');
         // __Mahou__.fillStyle = "#2980b9";
         __Mahou__.fillStyle = radgrad;
-        
+
         __Mahou__.arc(pellet.x, pellet.y, pellet.radius, 0, 2 * Math.PI);
         __Mahou__.globalAlpha = 1;
         __Mahou__.fill();

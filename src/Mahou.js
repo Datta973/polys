@@ -39,6 +39,13 @@ Array.prototype.remove = function (id) {
 let backgroundImage = loadSpriteSheet("images/PSA.png");
 let back;
 
+backgroundImage.onload = function () {
+    while (!__Mahou__) {}
+    back = __Mahou__.createPattern(backgroundImage, "repeat");
+    create();
+    //updateInterval = setInterval(loop, 1000 / frameRate);
+    loop();
+}
 
 
 
@@ -48,9 +55,8 @@ document.onreadystatechange = () => {
             setup();
         }
         if (document.readyState === 'complete') {
-            create();
-            //updateInterval = setInterval(loop, 1000 / frameRate);
-            loop();
+            // if(!back)return;
+
         }
     } catch (ex) {
 
@@ -684,9 +690,7 @@ function canvas(id) {
     __Mahou__.width = parseInt(document.getElementById(id).getAttribute("width"));
     __Mahou__.height = parseInt(document.getElementById(id).getAttribute("height"));
 
-    backgroundImage.onload = function () {
-        back = __Mahou__.createPattern(backgroundImage, "repeat");
-    }
+
 
 
     _canvas.addEventListener("mousemove", function (e) {

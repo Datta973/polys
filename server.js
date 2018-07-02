@@ -238,9 +238,9 @@ function resend() {
                             //     players[player].level++;
                             // }
                             // players[player].score += Math.floor(players[enemy].score / 2);
-                            temp = (players[enemy].experience / 0.25) / 2;
+                            temp = (players[enemy].experience / 0.25) / 2 + 5;
                             tempNum = Math.sqrt(temp) * 15;
-                            for (var i = 0; i < temp; i++) {
+                            for (var i = 0; i < temp/1.5; i++) {
                                 qTree.insert({ x: random(players[enemy].x - tempNum, players[enemy].x + tempNum), y: random(players[enemy].y - tempNum, players[enemy].y + tempNum), radius: 15 });
                             }
 

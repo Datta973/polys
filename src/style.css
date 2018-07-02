@@ -69,17 +69,42 @@ html, body {
 
 #name{
       border-radius: 4px;
-      border: 2px solid #7f8c8d;
+      border: 2px solid rgb(34, 141, 255);
       font-family: cursive;
       font-size: 1em;
       margin-bottom: 10px;
       width: 100%;
       padding: 4px;
       margin-left: -6px;
+      background: rgba(34, 141, 255,0.5);
+      color: white;
+}
+
+#name:focus{
+      outline: none;
+}
+
+#name::selection{
+      background:rgb(52, 73, 94);
 }
 
 
 #blackscreen.hidden{
       transition: 0.5s;
       top:-100%;
+}
+
+#namefield{
+      position: absolute;
+      top:25%;
+      left: 38%;
+      background: rgba(34, 141, 255,0.5);
+      width: 24%;
+      /* border: 2px solid #34495e; */
+      border-radius: 10px;
+      color: white;
+      padding: 20px;
+      font-family: cursive;
+      font-weight: bold;
+      box-shadow: 0 0 2px #fff, 0 0 5px #fff, 0 0 0px #fff, 0 0 50px rgb(34, 141, 255), 0 0 0px #228DFF, 0 0 10px #228DFF, 0 0 10px #228DFF, 0 0 10px #228DFF;
 }
