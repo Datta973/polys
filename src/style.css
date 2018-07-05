@@ -1,10 +1,38 @@
-html, body {
+@media screen and (orientation: portrait) {
+     #rotate_device{
+      display: block;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: black;
+     }
+     #zone_joystick{
+           display: none;
+     }
+     
+}
+
+@media screen and (orientation: landscape) {
+      #rotate_device{
+            display: none;
+      }
+      #zone_joystick{
+            display: block;
+      }
+      
+ }
+
+
+
+html,body{
+      /* transform: rotate(45deg); */
       width: 100%;
       height: 100%;
       margin: 0px;
       border: 0;
       overflow: hidden; /*  Disable scrollbars */
       display: block;  /* No floating content on sides */
+      color: white;
 }
 
 #blackscreen{
@@ -17,12 +45,30 @@ html, body {
       transition: 0.5s;
 }
 
+#rotate_device img{
+  
+      width: 75%;
+      height: 40%;
+      /* top:30%;
+      left:calc( 50vw - 200px ); */
+}
+
+#rotate_device p{
+      
+      font-size: 2em;
+      /* top:30%; */
+}
+
 /* #scoreboard{
       font-family: cursive;
       user-select: none;
       word-wrap: none;
       
 } */
+
+#game_canvas{
+
+}
 
 #scoreboard {
 	

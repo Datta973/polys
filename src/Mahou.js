@@ -39,8 +39,7 @@ Array.prototype.remove = function (id) {
 let backgroundImage = loadSpriteSheet("images/PSA.png");
 let back;
 
-backgroundImage.onload = function () {
-    while (!__Mahou__) {}
+window.onload = function () {
     back = __Mahou__.createPattern(backgroundImage, "repeat");
     create();
     //updateInterval = setInterval(loop, 1000 / frameRate);
@@ -50,17 +49,15 @@ backgroundImage.onload = function () {
 
 
 document.onreadystatechange = () => {
-    try {
-        if (document.readyState === 'interactive') {
-            setup();
-        }
-        if (document.readyState === 'complete') {
-            // if(!back)return;
 
-        }
-    } catch (ex) {
+    if (document.readyState === 'interactive') {
+        setup();
+    }
+    if (document.readyState === 'complete') {
+        // if(!back)return;
 
     }
+
 };
 
 class Stage {

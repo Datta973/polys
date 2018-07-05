@@ -1,6 +1,6 @@
 // socket dependencies
-// let socket = io();
-let socket = io.connect("https://polys.herokuapp.com");
+let socket = io();
+// let socket = io.connect("https://polys.herokuapp.com");
 // end socket dependencies
 
 var x, y,
@@ -62,6 +62,8 @@ let manager;
 let username = " ";
 let levelTextWidth = 21;
 let levelBarHeight = 18;
+let fontFamily = "cursive"
+let textWidth = 2;
 
 let participants = [];
 
@@ -78,6 +80,13 @@ HTMLElement.prototype.append = function (html) {
 }
 
 byId("name").focus();
+
+window.onresize = function () {
+    _canvas.width = window.innerWidth;
+    _canvas.height = window.innerHeight;
+    player.x = _canvas.width / 2;
+    player.y = _canvas.height / 2;
+}
 
 function setup() {
     canvas("game_canvas");
@@ -123,6 +132,20 @@ function create() {
         })
 
     } else {
+        $("#namefield").css("top","10%")
+        $("#name").click(function(){
+            document.body.webkitRequestFullScreen();
+        })
+        // window.screen.orientation.lock("landscape")
+
+        // locOrientation = screen.lockOrientation || screen.mozLockOrientation || screen.msLockOrientation || screen.orientation.lock;
+        // locOrientation('landscape');
+
+        // try{
+        //     alert(JSON.stringify(screen.orientation.lock("landscape")) )
+        // }catch(ex){
+        //     alert(ex);
+        // }
 
         document.getElementById("nitro").style.display = 'block';
         document.getElementById("fire").style.display = 'block';
@@ -130,9 +153,9 @@ function create() {
         mobileDevice = true;
         var options = {
             zone: document.getElementById('zone_joystick'),
-            color: 'blue',
+            color: '#2ecc71',
             mode: 'static',
-            position: { left: '15%', bottom: '15%' },
+            position: { left: '15%', bottom: '22%' },
             size: 100,
         };
         _canvas.style.position = 'absolute';
@@ -143,7 +166,8 @@ function create() {
         })
         levelTextWidth = 25;
         levelBarHeight = 30;
-
+        textWidth = 1;
+        fontFamily = "Helvetica"
         // document.addEventListener("mousedown", function () {
         //     if (!this.webkitIsFullScreen) {
         //         document.getElementById("screen").webkitRequestFullScreen();
@@ -470,10 +494,10 @@ function fixed() {
 
     __Mahou__.fillStyle = 'white';
     __Mahou__.strokeStyle = 'black';
-    __Mahou__.lineWidth = '2';
-    __Mahou__.font = "bold 25px cursive";
-    __Mahou__.fillText(others[socket.id].username.substring(0,15), _canvas.width / 2 - 32, _canvas.height / 2 - 45);
-    __Mahou__.strokeText(others[socket.id].username.substring(0,15), _canvas.width / 2 - 32, _canvas.height / 2 - 45)
+    __Mahou__.lineWidth = textWidth;
+    __Mahou__.font = "bold 25px "+fontFamily;
+    __Mahou__.fillText(others[socket.id].username.substring(0, 15), _canvas.width / 2 - 32, _canvas.height / 2 - 45);
+    __Mahou__.strokeText(others[socket.id].username.substring(0, 15), _canvas.width / 2 - 32, _canvas.height / 2 - 45)
 
 
     // if (!hasThrust) {
@@ -573,15 +597,15 @@ function Player(data) {
 
         sides = this.level + 2;
 
-        this.x += (this.target.x - this.x) / 6
-        this.y += (this.target.y - this.y) / 6
+        this.x += (this.target.x - this.x) / 4;
+        this.y += (this.target.y - this.y) / 4;
 
         // this.x = this.previous.x + ((this.target.x - this.previous.x) / 2 * this.time)
         // this.y = this.previous.y + ((this.target.y - this.previous.y) / 2 * this.time)
 
 
-        this.tip.x += (this.target.tip.x - this.tip.x) / 2;
-        this.tip.y += (this.target.tip.y - this.tip.y) / 2;
+        this.tip.x += (this.target.tip.x - this.tip.x) / 4;
+        this.tip.y += (this.target.tip.y - this.tip.y) / 4;
 
 
         this.rotation.current += (((((this.rotation.target - this.rotation.current) % 360) + 540) % 360) - 180) / 2;
@@ -677,9 +701,9 @@ function Player(data) {
         __Mahou__.fillStyle = 'white';
         __Mahou__.strokeStyle = 'black';
         __Mahou__.lineWidth = '1.5';
-        __Mahou__.font = "bold 20px cursive";
-        __Mahou__.fillText(this.username.substring(0,10), this.x - 32, this.y - 45);
-        __Mahou__.strokeText(this.username.substring(0,10), this.x - 32, this.y - 45);
+        __Mahou__.font = "bold 25px "+fontFamily;
+        __Mahou__.fillText(this.username.substring(0, 10), this.x - 32, this.y - 45);
+        __Mahou__.strokeText(this.username.substring(0, 10), this.x - 32, this.y - 45);
 
     }
 }

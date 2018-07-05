@@ -23,7 +23,7 @@ let temp_data = {};
 let world_width = 3072, world_height = 3072;
 let speed = 10;
 let projectile_speed = 0.3;
-let projectile_range = 70;
+let projectile_range = 130;
 let test_var = 10;
 
 //temp variables 
@@ -327,10 +327,10 @@ function resend() {
                 for (var enemy in players) {
                     if (enemy != player && players[enemy].alive) {
                         if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < 400 && !players[enemy].invincible) {
-                            if (players[player].level > players[enemy].level) {
+                            if (players[player].level >= players[enemy].level) {
                                 players[player].nitro = false;
                                 players[player].angle = (Math.atan2((players[player].y - players[enemy].y), (players[player].x - players[enemy].x)) * 180 / Math.PI - 90);
-                                if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < players[player].level * 70) {
+                                if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < players[player].level * 80) {
                                     if (!players[player].freezed && temp_data[player].cool_counter == 0) {
                                         temp_data[player].isFiring = true;
                                         temp_data[player].angle = players[player].angle;

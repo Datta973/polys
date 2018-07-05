@@ -12,25 +12,35 @@
 </head>
 
 <body>
-    <div id='screen' >
+    <div id='screen'>
+
         <canvas id='game_canvas' style="z-index: -1;"></canvas>
         <div style="position:static;" id="zone_joystick"></div>
-        <div style="display:none;position:absolute;border:40px solid #34495e;border-radius: 40px;bottom: 10%;right: 15%;" id="nitro">
-            <div style="position:absolute;width:0;border:35px solid #3498db;border-radius: 35px;margin-left: -35px;margin-top: -35px;"></div>
+        <div style="display:none;position:absolute;border:30px solid #ecf0f1;border-radius: 30px;bottom: 10%;right: 15%;" id="nitro">
+            <div style="position:absolute;width:0;border:25px solid #3498db;border-radius: 25px;margin-left: -25px;margin-top: -25px;"></div>
         </div>
-        <div style="display:none;position:absolute;border:40px solid #34495e;border-radius: 40px;bottom: 10%;right: 5%;" id="fire">
-            <div style="position:absolute;width:0;border:35px solid #e74c3c;border-radius: 35px;margin-left: -35px;margin-top: -35px;"></div>
+        <div style="display:none;position:absolute;border:30px solid #ecf0f1;border-radius: 30px;bottom: 10%;right: 5%;" id="fire">
+            <div style="position:absolute;width:0;border:25px solid #e74c3c;border-radius: 25px;margin-left: -25px;margin-top: -25px;"></div>
         </div>
-        <div style="position: absolute;top:10px;right:10px;width: 13%;list-style: none;padding: 10px;" id='scoreboard' ></div>
-        <div id='blackscreen' style="" >
-            <div id='namefield'  >
-                <div id='namelabel' >
+        <div style="position: absolute;top:10px;right:10px;width: 13%;list-style: none;padding: 10px;" id='scoreboard'></div>
+        <div id='blackscreen' style="">
+            <div id='namefield'>
+                <div id='namelabel'>
                     Your Name ?
                 </div>
                 <br>
                 <input id='name' onkeypress="onInput(event)" autocomplete="off" />
             </div>
         </div>
+
+        <div id="rotate_device">
+            <center style="margin-top:40%;" >
+                <p>Please Rotate your device to landscape mode.</p>
+                <img src='images/rotate_device.gif' />
+            </center>
+        </div>
+
+
     </div>
     <script src='main.js'></script>
 </body>
