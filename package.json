@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "engines": {
-    "node": ">=8.6.0"
+    "node": "8.x.x"
   },
   "dependencies": {
     "cordova-plugin-screen-orientation": "^3.0.1",
