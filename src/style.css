@@ -126,6 +126,10 @@ html,body{
       color: white;
 }
 
+#name::placeholder{
+      color: #fff;
+}
+
 #name:focus{
       outline: none;
 }

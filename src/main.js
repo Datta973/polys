@@ -1,8 +1,3 @@
-// socket dependencies
-let socket = io();
-// let socket = io.connect("https://polys.herokuapp.com");
-// end socket dependencies
-
 var x, y,
     x2 = 0,
     y2 = 0,
@@ -37,7 +32,11 @@ let tipX, tipY;
 let level = 1;
 let usedPoints = 0;
 let availablePoints = 10;
+
 let points_sc = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 68, 93, 120];
+let _inums = ["polys.herokuapp.com", "polys-polys.a3c1.starter-us-west-1.openshiftapps.com"]
+
+
 
 let test;
 let sides = 3;
@@ -46,6 +45,8 @@ let dx = 0, dy = 0;
 let rgb;
 
 let food = [];
+
+
 
 let colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#f1c40f", "#e67e22", "#e74c3c", "#ecf0f1"];
 
@@ -66,6 +67,46 @@ let fontFamily = "cursive"
 let textWidth = 2;
 
 let participants = [];
+let i_pings = [];
+let socket;
+
+// socket dependencies
+
+for (let i = 0; i < _inums.length; i++) {
+    if (i == _inums.length - 1) {
+        ping(_inums[i], function (ms) {
+
+            setSocket();
+            i_pings[i] = ms;
+        })
+    } else {
+        ping(_inums[i], function (ms) {
+            i_pings[i] = ms;
+        })
+    }
+}
+
+setTimeout(function () {
+    if(i_pings.length != 0 )return;
+    console.log("retrying")
+    for (let i = 0; i < _inums.length; i++) {
+        if (i == _inums.length - 1) {
+            ping(_inums[i], function (ms) {
+                setSocket();
+                i_pings[i] = ms;
+            })
+        } else {
+            ping(_inums[i], function (ms) {
+                i_pings[i] = ms;
+            })
+        }
+    }
+}, 5000)
+
+
+// let socket = io.connect("https://polys.herokuapp.com");
+// end socket dependencies
+
 
 window.mobilecheck = function () {
     var check = false;
@@ -132,8 +173,8 @@ function create() {
         })
 
     } else {
-        $("#namefield").css("top","10%")
-        $("#name").click(function(){
+        $("#namefield").css("top", "10%")
+        $("#name").click(function () {
             document.body.webkitRequestFullScreen();
         })
         // window.screen.orientation.lock("landscape")
@@ -297,11 +338,27 @@ function create() {
     y = 50;
     __Mahou__.font = '20px tahoma';
 
+
+
+
+}
+
+function setSocket() {
+    $("#namelabel").animate({ opacity: 0 }, function () {
+        $("#namelabel").text("Your name ?")
+        $("#namelabel").animate({ opacity: 1 })
+    })
+
+
+    $("#name").attr("placeholder", "")
+    $("#name").removeAttr("disabled")
+    $("#name").focus()
+
     // *** socket ***
+
+    socket = io(_inums[i_pings.indexOf(Math.min(...i_pings))])
+
     others = {};
-
-
-
 
     socket.on('update_data', function (data) {
         connectedToServer = true;
@@ -322,10 +379,10 @@ function create() {
                 if (!data["player_list"][id].alive) continue;
                 others[id] = new Player(data["player_list"][id]);
                 $("#scoreboard").append(`
-                <div class="row">
-                <div class="name">${data["player_list"][id].username}</div><div id=${id} class="score">0</div>
-                </div>
-                `)
+                 <div class="row">
+                 <div class="name">${data["player_list"][id].username}</div><div id=${id} class="score">0</div>
+                 </div>
+                 `)
                 //byId("scoreboard").append("<li data-score=0 ><div class='displayname'  >" + data["player_list"][id].username + "</div>" + " - " + "<font id='" + id + "' ></font></li>")
             }
             else {
@@ -377,10 +434,10 @@ function create() {
 
         for (let participant of participants) {
             $("#scoreboard").append(`
-                <div class="row">
-                <div class="name">${participant.name}</div><div id="${participant.id}" class="score">${participant.score}</div>
-                </div>
-            `)
+                 <div class="row">
+                 <div class="name">${participant.name}</div><div id="${participant.id}" class="score">${participant.score}</div>
+                 </div>
+             `)
         }
         $("#" + socket.id).parent().css("background", "rgb(41, 128, 185)")
 
@@ -495,7 +552,7 @@ function fixed() {
     __Mahou__.fillStyle = 'white';
     __Mahou__.strokeStyle = 'black';
     __Mahou__.lineWidth = textWidth;
-    __Mahou__.font = "bold 25px "+fontFamily;
+    __Mahou__.font = "bold 25px " + fontFamily;
     __Mahou__.fillText(others[socket.id].username.substring(0, 15), _canvas.width / 2 - 32, _canvas.height / 2 - 45);
     __Mahou__.strokeText(others[socket.id].username.substring(0, 15), _canvas.width / 2 - 32, _canvas.height / 2 - 45)
 
@@ -511,6 +568,22 @@ function fixed() {
 function d2r(d) {
     var r = d * (Math.PI / 180);
     return r;
+}
+
+
+
+function ping(host, pong) {
+    var soc = new io("http://" + host);
+    let started = new Date().getTime();
+    soc.emit("s_ping");
+    soc.on("s_pong", function () {
+        let ended = new Date().getTime();
+        // console.log("pong")
+        if (pong != null) {
+            pong(ended - started);
+        }
+    })
+
 }
 
 
@@ -701,7 +774,7 @@ function Player(data) {
         __Mahou__.fillStyle = 'white';
         __Mahou__.strokeStyle = 'black';
         __Mahou__.lineWidth = '1.5';
-        __Mahou__.font = "bold 25px "+fontFamily;
+        __Mahou__.font = "bold 25px " + fontFamily;
         __Mahou__.fillText(this.username.substring(0, 10), this.x - 32, this.y - 45);
         __Mahou__.strokeText(this.username.substring(0, 10), this.x - 32, this.y - 45);
 

@@ -129,8 +129,8 @@ io.on('connection', function (socket) {
     // ]);
 
     // circles[socket.id] = new C(new V(), 32);
-    socket.on("yay",function(data){
-        socket.emit("cool","yessssssss,it worked!!! "+data);
+    socket.on("s_ping",function(){
+        socket.emit("s_pong");
     })
 
     socket.on("start_game", function (data) {
