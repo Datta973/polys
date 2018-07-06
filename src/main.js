@@ -34,7 +34,7 @@ let usedPoints = 0;
 let availablePoints = 10;
 
 let points_sc = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 68, 93, 120];
-let _inums = ["polys.herokuapp.com", "polys-polys.a3c1.starter-us-west-1.openshiftapps.com"]
+let _inums = ["polys-polys.a3c1.starter-us-west-1.openshiftapps.com", "polys.herokuapp.com"]
 
 
 
@@ -87,7 +87,7 @@ for (let i = 0; i < _inums.length; i++) {
 }
 
 setTimeout(function () {
-    if(i_pings.length != 0 )return;
+    if (i_pings.length != 0) return;
     console.log("retrying")
     for (let i = 0; i < _inums.length; i++) {
         if (i == _inums.length - 1) {
@@ -573,7 +573,7 @@ function d2r(d) {
 
 
 function ping(host, pong) {
-    var soc = new io("http://" + host);
+    var soc = new io(host);
     let started = new Date().getTime();
     soc.emit("s_ping");
     soc.on("s_pong", function () {
