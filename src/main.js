@@ -34,7 +34,7 @@ let usedPoints = 0;
 let availablePoints = 10;
 
 let points_sc = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 68, 93, 120];
-let _inums = ["http://polys-polys.a3c1.starter-us-west-1.openshiftapps.com", "https://polys.herokuapp.com"]
+let _inums = ["http://polys-polys.a3c1.starter-us-west-1.openshiftapps.com", "polys.herokuapp.com"]
 
 
 
@@ -72,36 +72,36 @@ let socket;
 
 // socket dependencies
 
-for (let i = 0; i < _inums.length; i++) {
-    if (i == _inums.length - 1) {
-        ping(_inums[i], function (ms) {
+// for (let i = 0; i < _inums.length; i++) {
+//     if (i == _inums.length - 1) {
+//         ping(_inums[i], function (ms) {
 
-            setSocket();
-            i_pings[i] = ms;
-        })
-    } else {
-        ping(_inums[i], function (ms) {
-            i_pings[i] = ms;
-        })
-    }
-}
+//             setSocket();
+//             i_pings[i] = ms;
+//         })
+//     } else {
+//         ping(_inums[i], function (ms) {
+//             i_pings[i] = ms;
+//         })
+//     }
+// }
 
-setTimeout(function () {
-    if (i_pings.length != 0) return;
-    console.log("retrying")
-    for (let i = 0; i < _inums.length; i++) {
-        if (i == _inums.length - 1) {
-            ping(_inums[i], function (ms) {
-                setSocket();
-                i_pings[i] = ms;
-            })
-        } else {
-            ping(_inums[i], function (ms) {
-                i_pings[i] = ms;
-            })
-        }
-    }
-}, 5000)
+// setTimeout(function () {
+//     if (i_pings.length != 0) return;
+//     console.log("retrying")
+//     for (let i = 0; i < _inums.length; i++) {
+//         if (i == _inums.length - 1) {
+//             ping(_inums[i], function (ms) {
+//                 setSocket();
+//                 i_pings[i] = ms;
+//             })
+//         } else {
+//             ping(_inums[i], function (ms) {
+//                 i_pings[i] = ms;
+//             })
+//         }
+//     }
+// }, 5000)
 
 
 // let socket = io.connect("https://polys.herokuapp.com");
@@ -343,6 +343,8 @@ function create() {
 
 }
 
+setSocket()
+
 function setSocket() {
     $("#namelabel").animate({ opacity: 0 }, function () {
         $("#namelabel").text("Your name ?")
@@ -356,7 +358,8 @@ function setSocket() {
 
     // *** socket ***
 
-    socket = io(_inums[i_pings.indexOf(Math.min(...i_pings))])
+    // socket = io(_inums[i_pings.indexOf(Math.min(...i_pings))])
+    socket = io("polys-polys.a3c1.starter-us-west-1.openshiftapps.com")
 
     others = {};
 
