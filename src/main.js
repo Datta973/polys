@@ -34,7 +34,7 @@ let usedPoints = 0;
 let availablePoints = 10;
 
 let points_sc = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 68, 93, 120];
-let _inums = ["polys-polys.a3c1.starter-us-west-1.openshiftapps.com", "polys.herokuapp.com"]
+let _inums = ["http://polys-polys.a3c1.starter-us-west-1.openshiftapps.com", "https://polys.herokuapp.com"]
 
 
 
