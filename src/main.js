@@ -359,7 +359,7 @@ function setSocket() {
     // *** socket ***
 
     // socket = io(_inums[i_pings.indexOf(Math.min(...i_pings))])
-    socket = io("polys-polys.a3c1.starter-us-west-1.openshiftapps.com")
+    socket = io("http://polys-polys.a3c1.starter-us-west-1.openshiftapps.com")
 
     others = {};
 
