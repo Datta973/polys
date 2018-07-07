@@ -7,8 +7,8 @@
     "node": "8.x.x"
   },
   "dependencies": {
-    "cordova-plugin-screen-orientation": "^3.0.1",
-    "express": "^4.16.3",
+  
+"express": "^4.16.3",
     "socket.io": "^2.1.1"
   },
   "devDependencies": {},

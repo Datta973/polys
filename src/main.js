@@ -359,7 +359,8 @@ function setSocket() {
     // *** socket ***
 
     // socket = io(_inums[i_pings.indexOf(Math.min(...i_pings))])
-    socket = io("polys.herokuapp.com")
+    // socket = io("polys.herokuapp.com")
+    socket = io()
 
     others = {};
 

@@ -47,7 +47,7 @@ const RAD = (Math.PI / 180);
 
 
 
-let bots = [{ id: "001", username: "John Cena" }, { id: "002", username: "Kirito" }, { id: "003", username: "Pro Player" }, { id: "004", username: "Nyan" }, { id: "005", username: "Bigg Boss" }, { id: "006", username: "Good boi" }, { id: "007", username: "ddddd" }, { id: "008", username: "ccccc" }, { id: "009", username: "bbbb" }, { id: "010", username: "aaaa" }];
+let bots = [{ id: "001", username: "Krish" }, { id: "002", username: "Sekai" }, { id: "003", username: "Pro Boy" }, { id: "004", username: "Nyan Cat" }, { id: "005", username: "Bigg Brother" }, { id: "006", username: "Good boi" }];
 
 for (var i = 0; i < 480; i++) {
     qTree.insert({ x: Math.floor(Math.random() * 3000), y: Math.floor(Math.random() * 3000), radius: 10 });
@@ -327,10 +327,10 @@ function resend() {
                 for (var enemy in players) {
                     if (enemy != player && players[enemy].alive) {
                         if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < 400 && !players[enemy].invincible) {
-                            if (players[player].level >= players[enemy].level) {
+                            if (players[player].level > players[enemy].level) {
                                 players[player].nitro = false;
                                 players[player].angle = (Math.atan2((players[player].y - players[enemy].y), (players[player].x - players[enemy].x)) * 180 / Math.PI - 90);
-                                if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < players[player].level * 80) {
+                                if (dist({ x: players[player].x, y: players[player].y }, players[enemy]) < players[player].level * 100) {
                                     if (!players[player].freezed && temp_data[player].cool_counter == 0) {
                                         temp_data[player].isFiring = true;
                                         temp_data[player].angle = players[player].angle;
