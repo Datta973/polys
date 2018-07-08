@@ -93,7 +93,7 @@ function s_iterate(i) {
     if (i == _inums.length - 1) {
         getPCount(_inums[i], function (pcount) {
             if (pcount <= s_capacity[i]) {
-                console.log(_inums[i],"was selected as last server pcount:",pcount)
+                // console.log(_inums[i],"was selected as last server pcount:",pcount)
                 setSocket(sockets[i]);
             }else{
                 alert("Sorry :( all servers are busy")
@@ -105,7 +105,7 @@ function s_iterate(i) {
         // })
         getPCount(_inums[i], function (pcount) {
             if (pcount <= s_capacity[i]) {
-                console.log(_inums[i],"was selected pcount:",pcount)
+                // console.log(_inums[i],"was selected pcount:",pcount)
                 setSocket(sockets[i]);
             }else{
                 s_iterate(i + 1);
@@ -612,7 +612,7 @@ function ping(host, pong) {
 
 function getPCount(host, callback) {
     var soc =  io(host);
-    console.log("sock")
+    // console.log("sock")
     sockets.push(soc);
     soc.emit("p_count");
     soc.on("p_count", function (data) {
