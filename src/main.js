@@ -35,8 +35,9 @@ let availablePoints = 10;
 
 let points_sc = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 68, 93, 120];
 let _inums = ["polys-polyserver.a3c1.starter-us-west-1.openshiftapps.com", "polys.herokuapp.com"]
+// let _inums = ["localhost:8000"]
 let s_capacity = [10,5];
-
+let sockets = [];
 
 let test;
 let sides = 3;
@@ -91,8 +92,9 @@ s_iterate(0);
 function s_iterate(i) {
     if (i == _inums.length - 1) {
         getPCount(_inums[i], function (pcount) {
-            if (pcount < s_capacity[i]) {
-                setSocket(_inums[i]);
+            if (pcount <= s_capacity[i]) {
+                console.log(_inums[i],"was selected as last server pcount:",pcount)
+                setSocket(sockets[i]);
             }else{
                 alert("Sorry :( all servers are busy")
             }
@@ -102,8 +104,9 @@ function s_iterate(i) {
         //     i_pings[i] = ms;
         // })
         getPCount(_inums[i], function (pcount) {
-            if (pcount < s_capacity[i]) {
-                setSocket(_inums[i]);
+            if (pcount <= s_capacity[i]) {
+                console.log(_inums[i],"was selected pcount:",pcount)
+                setSocket(sockets[i]);
             }else{
                 s_iterate(i + 1);
             }
@@ -113,20 +116,9 @@ function s_iterate(i) {
 }
 
 setTimeout(function () {
-    if (i_pings.length != 0) return;
+    if (socket != undefined) return;
     console.log("retrying")
-    for (let i = 0; i < _inums.length; i++) {
-        if (i == _inums.length - 1) {
-            ping(_inums[i], function (ms) {
-                setSocket();
-                i_pings[i] = ms;
-            })
-        } else {
-            ping(_inums[i], function (ms) {
-                i_pings[i] = ms;
-            })
-        }
-    }
+    s_iterate(0);
 }, 5000)
 
 
@@ -369,7 +361,7 @@ function create() {
 
 }
 
-function setSocket(host) {
+function setSocket(soc) {
     $("#namelabel").animate({ opacity: 0 }, function () {
         $("#namelabel").text("Your name ?")
         $("#namelabel").animate({ opacity: 1 })
@@ -383,7 +375,7 @@ function setSocket(host) {
     // *** socket ***
 
     // socket = io(_inums[i_pings.indexOf(Math.min(...i_pings))])
-    socket = io(host)
+    socket = soc
     // socket = io("localhost:8000")
 
     others = {};
@@ -619,7 +611,9 @@ function ping(host, pong) {
 }
 
 function getPCount(host, callback) {
-    var soc = io(host);
+    var soc =  io(host);
+    console.log("sock")
+    sockets.push(soc);
     soc.emit("p_count");
     soc.on("p_count", function (data) {
         if (callback != null) {
