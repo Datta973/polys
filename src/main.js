@@ -34,8 +34,8 @@ let usedPoints = 0;
 let availablePoints = 10;
 
 let points_sc = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 68, 93, 120];
-let _inums = ["http://polys-polys.a3c1.starter-us-west-1.openshiftapps.com", "polys.herokuapp.com"]
-
+let _inums = ["polys-polyserver.a3c1.starter-us-west-1.openshiftapps.com", "polys.herokuapp.com"]
+let s_capacity = [10,5];
 
 
 let test;
@@ -75,9 +75,8 @@ let socket;
 // for (let i = 0; i < _inums.length; i++) {
 //     if (i == _inums.length - 1) {
 //         ping(_inums[i], function (ms) {
-
-//             setSocket();
 //             i_pings[i] = ms;
+//             setSocket();
 //         })
 //     } else {
 //         ping(_inums[i], function (ms) {
@@ -86,22 +85,49 @@ let socket;
 //     }
 // }
 
-// setTimeout(function () {
-//     if (i_pings.length != 0) return;
-//     console.log("retrying")
-//     for (let i = 0; i < _inums.length; i++) {
-//         if (i == _inums.length - 1) {
-//             ping(_inums[i], function (ms) {
-//                 setSocket();
-//                 i_pings[i] = ms;
-//             })
-//         } else {
-//             ping(_inums[i], function (ms) {
-//                 i_pings[i] = ms;
-//             })
-//         }
-//     }
-// }, 5000)
+
+s_iterate(0);
+
+function s_iterate(i) {
+    if (i == _inums.length - 1) {
+        getPCount(_inums[i], function (pcount) {
+            if (pcount < s_capacity[i]) {
+                setSocket(_inums[i]);
+            }else{
+                alert("Sorry :( all servers are busy")
+            }
+        })
+    } else {
+        // ping(_inums[i], function (ms) {
+        //     i_pings[i] = ms;
+        // })
+        getPCount(_inums[i], function (pcount) {
+            if (pcount < s_capacity[i]) {
+                setSocket(_inums[i]);
+            }else{
+                s_iterate(i + 1);
+            }
+        })
+        
+    }
+}
+
+setTimeout(function () {
+    if (i_pings.length != 0) return;
+    console.log("retrying")
+    for (let i = 0; i < _inums.length; i++) {
+        if (i == _inums.length - 1) {
+            ping(_inums[i], function (ms) {
+                setSocket();
+                i_pings[i] = ms;
+            })
+        } else {
+            ping(_inums[i], function (ms) {
+                i_pings[i] = ms;
+            })
+        }
+    }
+}, 5000)
 
 
 // let socket = io.connect("https://polys.herokuapp.com");
@@ -343,9 +369,7 @@ function create() {
 
 }
 
-setSocket()
-
-function setSocket() {
+function setSocket(host) {
     $("#namelabel").animate({ opacity: 0 }, function () {
         $("#namelabel").text("Your name ?")
         $("#namelabel").animate({ opacity: 1 })
@@ -359,8 +383,8 @@ function setSocket() {
     // *** socket ***
 
     // socket = io(_inums[i_pings.indexOf(Math.min(...i_pings))])
-    //  socket = io("polys.herokuapp.com")
-    socket = io()
+    socket = io(host)
+    // socket = io("localhost:8000")
 
     others = {};
 
@@ -404,6 +428,7 @@ function setSocket() {
                 others[id].username = data["player_list"][id].username;
                 others[id].invincible = data["player_list"][id].invincible;
                 others[id].score = Math.round(data["player_list"][id].experience * 1000);
+                others[id].cool_counter = data["player_list"][id].cool_counter;
                 //byId(id).parentElement.setAttribute('data-score', others[id].score);
                 participants.push({ id: id, score: others[id].score, name: others[id].username })
                 //$("#" + id).text(others[id].score);
@@ -496,6 +521,8 @@ function update() {
     tip.x = others[socket.id].tip.x;
     tip.y = others[socket.id].tip.y;
 
+    tip.opacity(1 - others[socket.id].cool_counter / (5 * others[socket.id].level), 1)
+
     cap.opacity(others[socket.id].opa, 1)
     //xpBar.strokeColor = others[socket.id].color;
     xpBar.strokeColor = "transparent"
@@ -577,10 +604,11 @@ function d2r(d) {
 
 
 function ping(host, pong) {
-    var soc = new io(host);
+    var soc = io(host);
     let started = new Date().getTime();
     soc.emit("s_ping");
     soc.on("s_pong", function () {
+
         let ended = new Date().getTime();
         // console.log("pong")
         if (pong != null) {
@@ -588,6 +616,16 @@ function ping(host, pong) {
         }
     })
 
+}
+
+function getPCount(host, callback) {
+    var soc = io(host);
+    soc.emit("p_count");
+    soc.on("p_count", function (data) {
+        if (callback != null) {
+            callback(data);
+        }
+    })
 }
 
 
@@ -670,6 +708,7 @@ function Player(data) {
     this.invincible = true;
     this.time = 1;
     this.username = "";
+    this.cool_counter = 1;
     this.modify = function () {
 
         sides = this.level + 2;
