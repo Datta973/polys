@@ -34,9 +34,9 @@ let usedPoints = 0;
 let availablePoints = 10;
 
 let points_sc = [0, 1, 3, 6, 10, 15, 21, 28, 36, 45, 55, 68, 93, 120];
-let _inums = ["polys-polyserver.a3c1.starter-us-west-1.openshiftapps.com", "polys.herokuapp.com"]
+let _inums = ["polys-polyserver.a3c1.starter-us-west-1.openshiftapps.com","mani-mani.193b.starter-ca-central-1.openshiftapps.com", "polys.herokuapp.com","manikantaserver.herokuapp.com"]
 // let _inums = ["localhost:8000"]
-let s_capacity = [10,5];
+let s_capacity = [10,10,5,5];
 let sockets = [];
 
 let test;
