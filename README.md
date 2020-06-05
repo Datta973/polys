@@ -1,2 +1,2 @@
-# polys
-Well... this is a real time multiplayer game
+# Polys
+This is an online multiplayer game, similar to slither.io
